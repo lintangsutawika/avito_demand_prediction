@@ -5,12 +5,13 @@
 import time
 notebookstart= time.time()
 
-from tqdm import tqdm
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os
 import gc
-print("Data:\n",os.listdir("../input"))
+import argparse
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+from tqdm import tqdm
 
 # Models Packages
 from sklearn import metrics
@@ -41,6 +42,15 @@ NFOLDS = 5
 SEED = 42
 VALID = False
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--image_top', default=False)
+parser.add_argument('--agg_feat', default=False)
+parser.add_argument('--mean_encoding', default=False)
+parser.add_argument('--emoji', default=False)
+parser.add_argument('--stem', default=False)
+
+args = parser.parse_args()
+
 def cleanName(text):
     try:
         textProc = text.lower()
@@ -58,21 +68,31 @@ def rmse(y, y0):
     return np.sqrt(np.mean(np.power((y - y0), 2)))
 
 ##############################################################################################################
+print("Additional Features:")
+##############################################################################################################
+print("{}:{}".format(str(args.image_top),args.image_top))
+print("{}:{}".format(str(args.agg_feat),args.agg_feat))
+print("{}:{}".format(str(args.mean_encoding),args.mean_encoding))
+print("{}:{}".format(str(args.emoji),args.emoji))
+print("{}:{}".format(str(args.stem),args.stem))
+
+##############################################################################################################
 print("\nData Load Stage")
 ##############################################################################################################
 training = pd.read_csv('../input/avito-demand-prediction/train.csv', index_col = "item_id", parse_dates = ["activation_date"])
 testing = pd.read_csv('../input/avito-demand-prediction/test.csv', index_col = "item_id", parse_dates = ["activation_date"])
 
 # Predicted Image Top 1
-# training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
-# testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
-
+if args.image_top == True:
+    training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
+    testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
 
 # Aggregated Features
 # https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
-aggregated_features = pd.read_csv("../input/misc/aggregated_features.csv")
-training = training.merge(aggregated_features, on='user_id', how='left')
-testing = testing.merge(aggregated_features, on='user_id', how='left')
+if args.agg_feat == True:
+    aggregated_features = pd.read_csv("../input/aggregated/aggregated_features.csv")
+    training = training.merge(aggregated_features, on='user_id', how='left')
+    testing = testing.merge(aggregated_features, on='user_id', how='left')
 
 train_index = training.index
 test_index = testing.index
@@ -120,92 +140,92 @@ for col in categorical:
 # ##############################################################################################################
 # print("\nMean Encoding")
 # ##############################################################################################################
-#Categorical Features
-# agg_cols = ['region', 'city', 'parent_category_name',
-#             'category_name','image_top_1', 'user_type',
-#             'item_seq_number','day_of_month','day_of_week','week_of_year']
+if args.mean_encoding == True:
+    agg_cols = ['region', 'city', 'parent_category_name',
+                'category_name','image_top_1', 'user_type',
+                'item_seq_number','day_of_month','day_of_week','week_of_year']
 
-# for category in tqdm(agg_cols):
-#     gp = df.loc[train_index,:].groupby(category)['deal_probability']
-#     mean = gp.mean()
-#     std  = gp.std()
-#     df[category + '_deal_probability_avg'] = df[category].map(mean)
-#     df[category + '_deal_probability_std'] = df[category].map(std)
+    # for category in tqdm(agg_cols):
+    #     gp = df.loc[train_index,:].groupby(category)['deal_probability']
+    #     mean = gp.mean()
+    #     std  = gp.std()
+    #     df[category + '_deal_probability_avg'] = df[category].map(mean)
+    #     df[category + '_deal_probability_std'] = df[category].map(std)
 
-# for category in tqdm(agg_cols):
-#     gp = df.loc[train_index,:].groupby(category)['price']
-#     mean = gp.mean()
-#     df[category + '_price_avg'] = df[category].map(mean)
+    # for category in tqdm(agg_cols):
+    #     gp = df.loc[train_index,:].groupby(category)['price']
+    #     mean = gp.mean()
+    #     df[category + '_price_avg'] = df[category].map(mean)
 
-# df.drop("deal_probability",axis=1, inplace=True)
+    # df.drop("deal_probability",axis=1, inplace=True)
 
 ##############################################################################################################
 # https://www.kaggle.com/classtag/take-care-of-emoji-character-when-nlp/notebook
 print("\nEmoji Features")
 ##############################################################################################################
+if args.emoji == True:
+    punct = set(string.punctuation)
+    # print(punct)
+    emoji = set()
+    for s in df['title'].fillna('').astype(str):
+        for c in s:
+            if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
+                continue
+            emoji.add(c)
 
-punct = set(string.punctuation)
-# print(punct)
-emoji = set()
-for s in df['title'].fillna('').astype(str):
-    for c in s:
-        if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
-            continue
-        emoji.add(c)
+    for s in df['description'].fillna('').astype(str):
+        for c in str(s):
+            if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
+                continue
+            emoji.add(c)
+    print(''.join(emoji))
 
-for s in df['description'].fillna('').astype(str):
-    for c in str(s):
-        if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
-            continue
-        emoji.add(c)
-print(''.join(emoji))
+    # basic word and char stats for title
+    df['n_titl_len'] = df['title'].fillna('').apply(len)
+    df['n_titl_wds'] = df['title'].fillna('').apply(lambda x: len(x.split(' ')))
+    df['n_titl_dig'] = df['title'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
+    df['n_titl_cap'] = df['title'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
+    df['n_titl_spa'] = df['title'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
+    df['n_titl_pun'] = df['title'].fillna('').apply(lambda x: sum(c in punct for c in x))
+    df['n_titl_emo'] = df['title'].fillna('').apply(lambda x: sum(c in emoji for c in x))
 
-# basic word and char stats for title
-df['n_titl_len'] = df['title'].fillna('').apply(len)
-df['n_titl_wds'] = df['title'].fillna('').apply(lambda x: len(x.split(' ')))
-df['n_titl_dig'] = df['title'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
-df['n_titl_cap'] = df['title'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
-df['n_titl_spa'] = df['title'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
-df['n_titl_pun'] = df['title'].fillna('').apply(lambda x: sum(c in punct for c in x))
-df['n_titl_emo'] = df['title'].fillna('').apply(lambda x: sum(c in emoji for c in x))
+    # some ratio stats for title
+    df['r_titl_wds'] = df['n_titl_wds']/(df['n_titl_len']+1)
+    df['r_titl_dig'] = df['n_titl_dig']/(df['n_titl_len']+1)
+    df['r_titl_cap'] = df['n_titl_cap']/(df['n_titl_len']+1)
+    df['r_titl_spa'] = df['n_titl_spa']/(df['n_titl_len']+1)
+    df['r_titl_pun'] = df['n_titl_pun']/(df['n_titl_len']+1)
+    df['r_titl_emo'] = df['n_titl_emo']/(df['n_titl_len']+1)
 
-# some ratio stats for title
-df['r_titl_wds'] = df['n_titl_wds']/(df['n_titl_len']+1)
-df['r_titl_dig'] = df['n_titl_dig']/(df['n_titl_len']+1)
-df['r_titl_cap'] = df['n_titl_cap']/(df['n_titl_len']+1)
-df['r_titl_spa'] = df['n_titl_spa']/(df['n_titl_len']+1)
-df['r_titl_pun'] = df['n_titl_pun']/(df['n_titl_len']+1)
-df['r_titl_emo'] = df['n_titl_emo']/(df['n_titl_len']+1)
+    # basic word and char stats for description
+    df['n_desc_len'] = df['description'].fillna('').apply(len)
+    df['n_desc_wds'] = df['description'].fillna('').apply(lambda x: len(x.split(' ')))
+    df['n_desc_dig'] = df['description'].fillna('').apply(lambda x: sum(c in punct for c in x))
+    df['n_desc_cap'] = df['description'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
+    df['n_desc_pun'] = df['description'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
+    df['n_desc_spa'] = df['description'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
+    df['n_desc_emo'] = df['description'].fillna('').apply(lambda x: sum(c in emoji for c in x))
+    df['n_desc_row'] = df['description'].astype(str).apply(lambda x: x.count('/\n'))
 
-# basic word and char stats for description
-df['n_desc_len'] = df['description'].fillna('').apply(len)
-df['n_desc_wds'] = df['description'].fillna('').apply(lambda x: len(x.split(' ')))
-df['n_desc_dig'] = df['description'].fillna('').apply(lambda x: sum(c in punct for c in x))
-df['n_desc_cap'] = df['description'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
-df['n_desc_pun'] = df['description'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
-df['n_desc_spa'] = df['description'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
-df['n_desc_emo'] = df['description'].fillna('').apply(lambda x: sum(c in emoji for c in x))
-df['n_desc_row'] = df['description'].astype(str).apply(lambda x: x.count('/\n'))
+    # some ratio stats
+    df['r_desc_wds'] = df['n_desc_wds']/(df['n_desc_len']+1)
+    df['r_desc_dig'] = df['n_desc_dig']/(df['n_desc_len']+1)
+    df['r_desc_cap'] = df['n_desc_cap']/(df['n_desc_len']+1)
+    df['r_desc_spa'] = df['n_desc_spa']/(df['n_desc_len']+1)
+    df['r_desc_pun'] = df['n_desc_pun']/(df['n_desc_len']+1)
+    df['r_desc_row'] = df['n_desc_row']/(df['n_desc_len']+1)
+    df['r_desc_emo'] = df['n_desc_emo']/(df['n_desc_len']+1)
 
-# some ratio stats
-df['r_desc_wds'] = df['n_desc_wds']/(df['n_desc_len']+1)
-df['r_desc_dig'] = df['n_desc_dig']/(df['n_desc_len']+1)
-df['r_desc_cap'] = df['n_desc_cap']/(df['n_desc_len']+1)
-df['r_desc_spa'] = df['n_desc_spa']/(df['n_desc_len']+1)
-df['r_desc_pun'] = df['n_desc_pun']/(df['n_desc_len']+1)
-df['r_desc_row'] = df['n_desc_row']/(df['n_desc_len']+1)
-df['r_desc_emo'] = df['n_desc_emo']/(df['n_desc_len']+1)
+    df['r_titl_des'] = df['n_titl_len']/(df['n_desc_len']+1)
 
-df['r_titl_des'] = df['n_titl_len']/(df['n_desc_len']+1)
-
-df['title'] = df['title'].apply(lambda x: cleanName(x))
-df["description"]   = df["description"].apply(lambda x: cleanName(x))
 
 
 ##############################################################################################################
 print("\nText Features")
 ##############################################################################################################
 textfeats = ["description", "title"]
+df['title'] = df['title'].apply(lambda x: cleanName(x))
+df["description"]   = df["description"].apply(lambda x: cleanName(x))
 df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
 
 for cols in textfeats:
@@ -220,25 +240,25 @@ for cols in textfeats:
 ##############################################################################################################
 print("\n[TF-IDF] Term Frequency Inverse Document Frequency Stage")
 ##############################################################################################################
+if args.stem == True:
+    stemmer = SnowballStemmer("russian") 
+    tokenizer = toktok.ToktokTokenizer()
 
-# stemmer = SnowballStemmer("russian") 
-# tokenizer = toktok.ToktokTokenizer()
+    def stemRussian(word, stemmer):
+        try:
+            word.encode(encoding='utf-8').decode('ascii')
+            return word
+        except:
+            return stemmer.stem(word)
 
-# def stemRussian(word, stemmer):
-#     try:
-#         word.encode(encoding='utf-8').decode('ascii')
-#         return word
-#     except:
-#         return stemmer.stem(word)
+    tqdm.pandas()
+    if "stemmed_description.csv" not in os.listdir("."):
+        df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+        df['description'].to_csv("stemmed_description.csv", index= False)
+    else:
+        df['description'] = pd.read_csv("stemmed_description.csv")
 
-# tqdm.pandas()
-# if "stemmed_description.csv" not in os.listdir("."):
-#     df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
-#     df['description'].to_csv("stemmed_description.csv", index= False)
-# else:
-#     df['description'] = pd.read_csv("stemmed_description.csv")
-
-russian_stop = set(stopwords.words('russian'))
+    russian_stop = set(stopwords.words('russian'))
 
 tfidf_para = {
     "stop_words": russian_stop,
@@ -279,6 +299,7 @@ print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
 # Drop Text Cols
 textfeats = ["description", "title"]
+
 df.drop(textfeats, axis=1,inplace=True)
 
 from sklearn.metrics import mean_squared_error
