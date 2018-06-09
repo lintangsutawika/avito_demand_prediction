@@ -100,20 +100,8 @@ print("{}:{}".format(str(args.stem),args.stem))
 ##############################################################################################################
 print("\nData Load Stage")
 ##############################################################################################################
-training = pd.read_csv('../input/avito-demand-prediction/train.csv', index_col = "item_id", parse_dates = ["activation_date"])
-testing = pd.read_csv('../input/avito-demand-prediction/test.csv', index_col = "item_id", parse_dates = ["activation_date"])
-
-# Predicted Image Top 1
-if args.image_top == True:
-    training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
-    testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
-
-# Aggregated Features
-# https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
-if args.agg_feat == True:
-    aggregated_features = pd.read_csv("../input/aggregated/aggregated_features.csv")
-    training = training.merge(aggregated_features, on='user_id', how='left')
-    testing = testing.merge(aggregated_features, on='user_id', how='left')
+training = pd.read_csv('../input/avito-demand-prediction/train.csv', parse_dates = ["activation_date"])
+testing = pd.read_csv('../input/avito-demand-prediction/test.csv', parse_dates = ["activation_date"])
 
 ntrain = training.shape[0]
 ntest = testing.shape[0]
@@ -122,14 +110,8 @@ y = training['deal_probability']
 training.drop("deal_probability",axis=1, inplace=True)
 print('Train shape: {} Rows, {} Columns'.format(*training.shape))
 print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
-
 print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
-training.set_index('item_id', inplace=True)
-testing.set_index('item_id', inplace=True)
-train_index = training.index
-test_index = testing.index
-
 # Aggregated Features
 # https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
 if args.agg_feat == 'True':
@@ -140,6 +122,16 @@ if args.agg_feat == 'True':
     df["avg_times_up_user"].fillna(-1, inplace=True)
 
 df.set_index('item_id', inplace=True)
+training.set_index('item_id', inplace=True)
+testing.set_index('item_id', inplace=True)
+train_index = training.index
+test_index = testing.index
+
+# Predicted Image Top 1
+if args.image_top == True:
+    training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
+    testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
+
 ##############################################################################################################
 print("Basic Feature Engineering")
 ##############################################################################################################
