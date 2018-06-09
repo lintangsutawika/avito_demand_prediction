@@ -384,7 +384,7 @@ print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
 tfvocab = vectorizer.get_feature_names()
 print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
-mask = np.where(ready_df.getnnz(axis=0) > 100)[0]
+mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
 ready_df = ready_df[:,mask]
 tfvocab = list(np.asarray(tfvocab)[mask])
 
