@@ -50,6 +50,7 @@ parser.add_argument('--agg_feat', default=False)
 parser.add_argument('--mean_encoding', default=False)
 parser.add_argument('--emoji', default=False)
 parser.add_argument('--stem', default=False)
+parser.add_argument('--ridge', default=False)
 
 args = parser.parse_args()
 
@@ -77,6 +78,7 @@ print("agg_feat: {}".format(args.agg_feat))
 print("mean_encoding: {}".format(args.mean_encoding))
 print("emoji: {}".format(args.emoji))
 print("stem: {}".format(args.stem))
+print("ridge: {}".format(args.ridge))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -89,7 +91,6 @@ if args.image_top == 'True':
     print('added image_top')
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv")
-
 
 print("{}:{}".format(str(args.image_top),args.image_top))
 print("{}:{}".format(str(args.agg_feat),args.agg_feat))
@@ -265,42 +266,42 @@ if args.emoji == 'True':
             emoji.add(c)
     # print(''.join(emoji))
     # basic word and char stats for title
-    df['n_titl_len'] = np.log1p(df['title'].fillna('').apply(len))
-    df['n_titl_wds'] = np.log1p(df['title'].fillna('').apply(lambda x: len(x.split(' '))))
-    df['n_titl_dig'] = np.log1p(df['title'].fillna('').apply(lambda x: sum(c.isdigit() for c in x)))
-    df['n_titl_cap'] = np.log1p(df['title'].fillna('').apply(lambda x: sum(c.isupper() for c in x)))
-    df['n_titl_spa'] = np.log1p(df['title'].fillna('').apply(lambda x: sum(c.isspace() for c in x)))
-    df['n_titl_pun'] = np.log1p(df['title'].fillna('').apply(lambda x: sum(c in punct for c in x)))
-    df['n_titl_emo'] = np.log1p(df['title'].fillna('').apply(lambda x: sum(c in emoji for c in x)))
+    df['n_titl_len'] = df['title'].fillna('').apply(len)
+    df['n_titl_wds'] = df['title'].fillna('').apply(lambda x: len(x.split(' ')))
+    df['n_titl_dig'] = df['title'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
+    df['n_titl_cap'] = df['title'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
+    df['n_titl_spa'] = df['title'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
+    df['n_titl_pun'] = df['title'].fillna('').apply(lambda x: sum(c in punct for c in x))
+    df['n_titl_emo'] = df['title'].fillna('').apply(lambda x: sum(c in emoji for c in x))
 
     # some ratio stats for title
-    df['r_titl_wds'] = np.log1p(df['n_titl_wds']/(df['n_titl_len']+1))
-    df['r_titl_dig'] = np.log1p(df['n_titl_dig']/(df['n_titl_len']+1))
-    df['r_titl_cap'] = np.log1p(df['n_titl_cap']/(df['n_titl_len']+1))
-    df['r_titl_spa'] = np.log1p(df['n_titl_spa']/(df['n_titl_len']+1))
-    df['r_titl_pun'] = np.log1p(df['n_titl_pun']/(df['n_titl_len']+1))
-    df['r_titl_emo'] = np.log1p(df['n_titl_emo']/(df['n_titl_len']+1))
+    df['r_titl_wds'] = df['n_titl_wds']/(df['n_titl_len']+1)
+    df['r_titl_dig'] = df['n_titl_dig']/(df['n_titl_len']+1)
+    df['r_titl_cap'] = df['n_titl_cap']/(df['n_titl_len']+1)
+    df['r_titl_spa'] = df['n_titl_spa']/(df['n_titl_len']+1)
+    df['r_titl_pun'] = df['n_titl_pun']/(df['n_titl_len']+1)
+    df['r_titl_emo'] = df['n_titl_emo']/(df['n_titl_len']+1)
 
     # basic word and char stats for description
-    df['n_desc_len'] = np.log1p(df['description'].fillna('').apply(len))
-    df['n_desc_wds'] = np.log1p(df['description'].fillna('').apply(lambda x: len(x.split(' '))))
-    df['n_desc_dig'] = np.log1p(df['description'].fillna('').apply(lambda x: sum(c in punct for c in x)))
-    df['n_desc_cap'] = np.log1p(df['description'].fillna('').apply(lambda x: sum(c.isdigit() for c in x)))
-    df['n_desc_pun'] = np.log1p(df['description'].fillna('').apply(lambda x: sum(c.isupper() for c in x)))
-    df['n_desc_spa'] = np.log1p(df['description'].fillna('').apply(lambda x: sum(c.isspace() for c in x)))
-    df['n_desc_emo'] = np.log1p(df['description'].fillna('').apply(lambda x: sum(c in emoji for c in x)))
-    df['n_desc_row'] = np.log1p(df['description'].astype(str).apply(lambda x: x.count('/\n')))
+    df['n_desc_len'] = df['description'].fillna('').apply(len)
+    df['n_desc_wds'] = df['description'].fillna('').apply(lambda x: len(x.split(' ')))
+    df['n_desc_dig'] = df['description'].fillna('').apply(lambda x: sum(c in punct for c in x))
+    df['n_desc_cap'] = df['description'].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
+    df['n_desc_pun'] = df['description'].fillna('').apply(lambda x: sum(c.isupper() for c in x))
+    df['n_desc_spa'] = df['description'].fillna('').apply(lambda x: sum(c.isspace() for c in x))
+    df['n_desc_emo'] = df['description'].fillna('').apply(lambda x: sum(c in emoji for c in x))
+    df['n_desc_row'] = df['description'].astype(str).apply(lambda x: x.count('/\n'))
 
     # some ratio stats
-    df['r_desc_wds'] = np.log1p(df['n_desc_wds']/(df['n_desc_len']+1))
-    df['r_desc_dig'] = np.log1p(df['n_desc_dig']/(df['n_desc_len']+1))
-    df['r_desc_cap'] = np.log1p(df['n_desc_cap']/(df['n_desc_len']+1))
-    df['r_desc_spa'] = np.log1p(df['n_desc_spa']/(df['n_desc_len']+1))
-    df['r_desc_pun'] = np.log1p(df['n_desc_pun']/(df['n_desc_len']+1))
-    df['r_desc_row'] = np.log1p(df['n_desc_row']/(df['n_desc_len']+1))
-    df['r_desc_emo'] = np.log1p(df['n_desc_emo']/(df['n_desc_len']+1))
+    df['r_desc_wds'] = (df['n_desc_wds']/(df['n_desc_len']+1))
+    df['r_desc_dig'] = (df['n_desc_dig']/(df['n_desc_len']+1))
+    df['r_desc_cap'] = (df['n_desc_cap']/(df['n_desc_len']+1))
+    df['r_desc_spa'] = (df['n_desc_spa']/(df['n_desc_len']+1))
+    df['r_desc_pun'] = (df['n_desc_pun']/(df['n_desc_len']+1))
+    df['r_desc_row'] = (df['n_desc_row']/(df['n_desc_len']+1))
+    df['r_desc_emo'] = (df['n_desc_emo']/(df['n_desc_len']+1))
 
-    df['r_titl_des'] = np.log1p(df['n_titl_len']/(df['n_desc_len']+1))
+    df['r_titl_des'] = (df['n_titl_len']/(df['n_desc_len']+1))
 
 
 ##############################################################################################################
@@ -379,66 +380,71 @@ start_vect=time.time()
 vectorizer.fit(df.to_dict('records'))
 
 ready_df = vectorizer.transform(df.to_dict('records'))
+print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
 tfvocab = vectorizer.get_feature_names()
 print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
+
+mask = np.where(ready_df.getnnz(axis=0) > 100)[0]
+ready_df = ready_df[:,mask]
+tfvocab = list(np.asarray(tfvocab)[mask])
 
 # Drop Text Cols
 textfeats = ["description", "title"]
 # sys.exit(1)
 df.drop(textfeats, axis=1,inplace=True)
 
-from sklearn.metrics import mean_squared_error
-from math import sqrt
+if args.ridge == "True":
+    ##############################################################################################################
+    # https://www.kaggle.com/mmueller/stacking-starter?scriptVersionId=390867
+    # help lightgbm converge faster
+    print("Ridge Regression Features")
+    ##############################################################################################################
+    from sklearn.metrics import mean_squared_error
+    from math import sqrt
 
-#ridge_params = {'alpha':30.0, 'fit_intercept':True, 'normalize':False, 'copy_X':True,
-#                'max_iter':None, 'tol':0.001, 'solver':'auto', 'random_state':SEED}
-##############################################################################################################
-# https://www.kaggle.com/mmueller/stacking-starter?scriptVersionId=390867
-# help lightgbm converge faster
-#print("Ridge Regression Features")
-##############################################################################################################
-# sys.exit(1)
-#kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
+    ridge_params = {'alpha':30.0, 'fit_intercept':True, 'normalize':False, 'copy_X':True,
+                   'max_iter':None, 'tol':0.001, 'solver':'auto', 'random_state':SEED}
+    kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
 
-#class SklearnWrapper(object):
-#    def __init__(self, clf, seed=0, params=None, seed_bool = True):
-#        if(seed_bool == True):
-#            params['random_state'] = seed
-#        self.clf = clf(**params)
+    class SklearnWrapper(object):
+       def __init__(self, clf, seed=0, params=None, seed_bool = True):
+           if(seed_bool == True):
+               params['random_state'] = seed
+           self.clf = clf(**params)
 
-#    def train(self, x_train, y_train):
-#        self.clf.fit(x_train, y_train)
+       def train(self, x_train, y_train):
+           self.clf.fit(x_train, y_train)
 
-#    def predict(self, x):
-#        return self.clf.predict(x)
+       def predict(self, x):
+           return self.clf.predict(x)
 
-#def get_oof(clf, x_train, y, x_test):
-#    oof_train = np.zeros((ntrain,))
-#    oof_test = np.zeros((ntest,))
-#    oof_test_skf = np.empty((NFOLDS, ntest))
+    def get_oof(clf, x_train, y, x_test):
+       oof_train = np.zeros((ntrain,))
+       oof_test = np.zeros((ntest,))
+       oof_test_skf = np.empty((NFOLDS, ntest))
 
-#    for i, (train_index, test_index) in enumerate(kf):
-#        print('Ridge Regression, Fold {}'.format(i))
-#        x_tr = x_train[train_index]
-#        y_tr = y[train_index]
-#        x_te = x_train[test_index]
+       for i, (train_index, test_index) in enumerate(kf):
+           print('Ridge Regression, Fold {}'.format(i))
+           x_tr = x_train[train_index]
+           y_tr = y[train_index]
+           x_te = x_train[test_index]
 
-#        clf.train(x_tr, y_tr)
+           clf.train(x_tr, y_tr)
 
-#        oof_train[test_index] = clf.predict(x_te)
-#        oof_test_skf[i, :] = clf.predict(x_test)
+           oof_train[test_index] = clf.predict(x_te)
+           oof_test_skf[i, :] = clf.predict(x_test)
 
-#    oof_test[:] = oof_test_skf.mean(axis=0)
-#    return oof_train.reshape(-1, 1), oof_test.reshape(-1, 1)
-    # return oof_test_skf
+       oof_test[:] = oof_test_skf.mean(axis=0)
+       return oof_train.reshape(-1, 1), oof_test.reshape(-1, 1)
+        return oof_test_skf
 
-#ridge = SklearnWrapper(clf=Ridge, seed = SEED, params = ridge_params)
-#ridge_oof_train, ridge_oof_test = get_oof(ridge, ready_df[:ntrain], y, ready_df[ntrain:])
+    ridge = SklearnWrapper(clf=Ridge, seed = SEED, params = ridge_params)
+    ridge_oof_train, ridge_oof_test = get_oof(ridge, ready_df[:ntrain], y, ready_df[ntrain:])
 
-#rms = sqrt(mean_squared_error(y, ridge_oof_train))
-#print('Ridge OOF RMSE: {}'.format(rms))
-#ridge_preds = np.concatenate([ridge_oof_train, ridge_oof_test])
-#df['ridge_preds'] = ridge_preds
+    rms = sqrt(mean_squared_error(y, ridge_oof_train))
+    print('Ridge OOF RMSE: {}'.format(rms))
+    ridge_preds = np.concatenate([ridge_oof_train, ridge_oof_test])
+    df['ridge_preds'] = ridge_preds
 
 ##############################################################################################################
 print("Combine Dense Features with Sparse Text Bag of Words Features")
@@ -465,13 +471,15 @@ lgbm_params =  {
     'boosting_type': 'gbdt',
     'objective': 'regression',
     'metric': 'rmse',
-    # 'max_depth': 15,
+    'max_depth': 15,
     'num_leaves':450,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
-    'bagging_freq': 100,
-    'learning_rate': 0.005,
-    'verbose': 0
+    # 'bagging_freq': 100,
+    'learning_rate': 0.01,
+    'verbose': 0,
+    'lambda_l1': 10,
+    'lambda_l2': 10
 }  
 
 # X_train, X_valid, y_train, y_valid = train_test_split(
@@ -511,10 +519,10 @@ for train, valid in kf_.split(X):
         X = X.tocsr()
         lgbtrain = lgb.Dataset(X[train], y[train],
                         feature_name=tfvocab,
-                        categorical_feature = categorical)
+                        categorical_feature = "")
         lgbvalid = lgb.Dataset(X[valid], y[valid],
                         feature_name=tfvocab,
-                        categorical_feature = categorical)
+                        categorical_feature = "")
 
         model = lgb.train(
             lgbm_params,
