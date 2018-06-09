@@ -407,36 +407,36 @@ if args.ridge == "True":
     kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
 
     class SklearnWrapper(object):
-       def __init__(self, clf, seed=0, params=None, seed_bool = True):
-           if(seed_bool == True):
-               params['random_state'] = seed
-           self.clf = clf(**params)
+        def __init__(self, clf, seed=0, params=None, seed_bool = True):
+            if(seed_bool == True):
+                params['random_state'] = seed
+            self.clf = clf(**params)
 
-       def train(self, x_train, y_train):
-           self.clf.fit(x_train, y_train)
+        def train(self, x_train, y_train):
+            self.clf.fit(x_train, y_train)
 
-       def predict(self, x):
-           return self.clf.predict(x)
+        def predict(self, x):
+            return self.clf.predict(x)
 
     def get_oof(clf, x_train, y, x_test):
-       oof_train = np.zeros((ntrain,))
-       oof_test = np.zeros((ntest,))
-       oof_test_skf = np.empty((NFOLDS, ntest))
+        oof_train = np.zeros((ntrain,))
+        oof_test = np.zeros((ntest,))
+        oof_test_skf = np.empty((NFOLDS, ntest))
 
-       for i, (train_index, test_index) in enumerate(kf):
-           print('Ridge Regression, Fold {}'.format(i))
-           x_tr = x_train[train_index]
-           y_tr = y[train_index]
-           x_te = x_train[test_index]
+        for i, (train_index, test_index) in enumerate(kf):
+            print('Ridge Regression, Fold {}'.format(i))
+            x_tr = x_train[train_index]
+            y_tr = y[train_index]
+            x_te = x_train[test_index]
 
-           clf.train(x_tr, y_tr)
+            clf.train(x_tr, y_tr)
 
-           oof_train[test_index] = clf.predict(x_te)
-           oof_test_skf[i, :] = clf.predict(x_test)
+            oof_train[test_index] = clf.predict(x_te)
+            oof_test_skf[i, :] = clf.predict(x_test)
 
-       oof_test[:] = oof_test_skf.mean(axis=0)
-       return oof_train.reshape(-1, 1), oof_test.reshape(-1, 1)
-        return oof_test_skf
+        oof_test[:] = oof_test_skf.mean(axis=0)
+        return oof_train.reshape(-1, 1), oof_test.reshape(-1, 1)
+        # return oof_test_skf
 
     ridge = SklearnWrapper(clf=Ridge, seed = SEED, params = ridge_params)
     ridge_oof_train, ridge_oof_test = get_oof(ridge, ready_df[:ntrain], y, ready_df[ntrain:])
