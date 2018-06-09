@@ -384,9 +384,9 @@ print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
 tfvocab = vectorizer.get_feature_names()
 print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
-mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
-ready_df = ready_df[:,mask]
-tfvocab = list(np.asarray(tfvocab)[mask])
+# mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
+# ready_df = ready_df[:,mask]
+# tfvocab = list(np.asarray(tfvocab)[mask])
 
 # Drop Text Cols
 textfeats = ["description", "title"]
@@ -456,7 +456,7 @@ for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
 print("Feature Names Length: ".format(len(tfvocab)))
 del df,vectorizer, ready_df
-#def ridge_preds, ready_df
+# del ridge_preds, ready_df
 gc.collect();
 
 ##############################################################################################################
