@@ -149,8 +149,8 @@ df["image_top_1"].fillna(-999,inplace=True)
 ##############################################################################################################
 print("Create Time Variables")
 ##############################################################################################################
-df["week_of_year"] = df['activation_date'].dt.week
-df["day_of_month"] = df['activation_date'].dt.day
+# df["week_of_year"] = df['activation_date'].dt.week
+# df["day_of_month"] = df['activation_date'].dt.day
 df["day_of_week"] = df['activation_date'].dt.weekday
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
@@ -158,9 +158,69 @@ df.drop(["activation_date","image"],axis=1,inplace=True)
 ##############################################################################################################
 print("Encode Variables")
 ##############################################################################################################
+class TargetEncoder:
+    # Adapted from https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
+    def __repr__(self):
+        return 'TargetEncoder'
+
+    def __init__(self, cols, smoothing=1, min_samples_leaf=1, noise_level=0, keep_original=False):
+        self.cols = cols
+        self.smoothing = smoothing
+        self.min_samples_leaf = min_samples_leaf
+        self.noise_level = noise_level
+        self.keep_original = keep_original
+
+    @staticmethod
+    def add_noise(series, noise_level):
+        return series * (1 + noise_level * np.random.randn(len(series)))
+
+    def encode(self, train, test, target):
+        for col in self.cols:
+            if self.keep_original:
+                train[col + '_te'], test[col + '_te'] = self.encode_column(train[col], test[col], target)
+            else:
+                train[col], test[col] = self.encode_column(train[col], test[col], target)
+        return train, test
+
+    def encode_column(self, trn_series, tst_series, target):
+        temp = pd.concat([trn_series, target], axis=1)
+        # Compute target mean
+        averages = temp.groupby(by=trn_series.name)[target.name].agg(["mean", "count"])
+        # Compute smoothing
+        smoothing = 1 / (1 + np.exp(-(averages["count"] - self.min_samples_leaf) / self.smoothing))
+        # Apply average function to all target data
+        prior = target.mean()
+        # The bigger the count the less full_avg is taken into account
+        averages[target.name] = prior * (1 - smoothing) + averages["mean"] * smoothing
+        averages.drop(['mean', 'count'], axis=1, inplace=True)
+        # Apply averages to trn and tst series
+        ft_trn_series = pd.merge(
+            trn_series.to_frame(trn_series.name),
+            averages.reset_index().rename(columns={'index': target.name, target.name: 'average'}),
+            on=trn_series.name,
+            how='left')['average'].rename(trn_series.name + '_mean').fillna(prior)
+        # pd.merge does not keep the index so restore it
+        ft_trn_series.index = trn_series.index
+        ft_tst_series = pd.merge(
+            tst_series.to_frame(tst_series.name),
+            averages.reset_index().rename(columns={'index': target.name, target.name: 'average'}),
+            on=tst_series.name,
+            how='left')['average'].rename(trn_series.name + '_mean').fillna(prior)
+        # pd.merge does not keep the index so restore it
+        ft_tst_series.index = tst_series.index
+        return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
+
+encode_feature_start_time = time.time()
+print("Start Target Encoding")
+f_cats = ["region","city","parent_category_name","category_name","user_type","image_top_1"]
+target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                              keep_original=True, cols=f_cats)
+df_train, df_test = target_encode.encode(df_train, df_test, y_train)
+print('[{}] Finished target encoding'.format(time.time() - encode_feature_start_time))
+
 categorical = ["user_id","region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3"]
-print("Encoding : {}".format(categorical))
+print("Start Label Encoding")
 # Encoder:
 lbl = preprocessing.LabelEncoder()
 for col in categorical:
@@ -174,7 +234,8 @@ if args.mean_encoding == 'True':
     print("added mean_encoding")
     agg_cols = ['region', 'city', 'parent_category_name',
                 'category_name','image_top_1', 'user_type',
-                'item_seq_number','day_of_month','day_of_week','week_of_year']
+                'item_seq_number','day_of_week']
+                # 'day_of_month','week_of_year']
 
     # for category in tqdm(agg_cols):
     #     gp = df.loc[train_index,:].groupby(category)['deal_probability']
