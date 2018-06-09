@@ -207,7 +207,7 @@ print("Start Target Encoding")
 f_cats = ["region","city","parent_category_name","category_name","user_type","image_top_1"]
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                               keep_original=True, cols=f_cats)
-df_train, df_test = target_encode.encode(df_train, df_test, y_train)
+training, testing = target_encode.encode(training, testing, y)
 print('[{}] Finished target encoding'.format(time.time() - encode_feature_start_time))
 
 categorical = ["user_id","region","city","parent_category_name","category_name",
