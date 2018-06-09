@@ -90,6 +90,31 @@ if args.image_top == 'True':
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv")
 
+
+print("{}:{}".format(str(args.image_top),args.image_top))
+print("{}:{}".format(str(args.agg_feat),args.agg_feat))
+print("{}:{}".format(str(args.mean_encoding),args.mean_encoding))
+print("{}:{}".format(str(args.emoji),args.emoji))
+print("{}:{}".format(str(args.stem),args.stem))
+
+##############################################################################################################
+print("\nData Load Stage")
+##############################################################################################################
+training = pd.read_csv('../input/avito-demand-prediction/train.csv', index_col = "item_id", parse_dates = ["activation_date"])
+testing = pd.read_csv('../input/avito-demand-prediction/test.csv', index_col = "item_id", parse_dates = ["activation_date"])
+
+# Predicted Image Top 1
+if args.image_top == True:
+    training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
+    testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
+
+# Aggregated Features
+# https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
+if args.agg_feat == True:
+    aggregated_features = pd.read_csv("../input/aggregated/aggregated_features.csv")
+    training = training.merge(aggregated_features, on='user_id', how='left')
+    testing = testing.merge(aggregated_features, on='user_id', how='left')
+
 ntrain = training.shape[0]
 ntest = testing.shape[0]
 
@@ -119,7 +144,6 @@ df.set_index('item_id', inplace=True)
 print("Basic Feature Engineering")
 ##############################################################################################################
 df["price"] = np.log1p(df["price"])
-df["price"].fillna(df.price.mean(),inplace=True)
 df["image_top_1"].fillna(-999,inplace=True)
 
 ##############################################################################################################
@@ -137,7 +161,6 @@ print("Encode Variables")
 categorical = ["user_id","region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3"]
 print("Encoding : {}".format(categorical))
-
 # Encoder:
 lbl = preprocessing.LabelEncoder()
 for col in categorical:
@@ -188,7 +211,6 @@ if args.emoji == 'True':
                 continue
             emoji.add(c)
     # print(''.join(emoji))
-
     # basic word and char stats for title
     df['n_titl_len'] = np.log1p(df['title'].fillna('').apply(len))
     df['n_titl_wds'] = np.log1p(df['title'].fillna('').apply(lambda x: len(x.split(' '))))
@@ -317,7 +339,6 @@ from math import sqrt
 
 #ridge_params = {'alpha':30.0, 'fit_intercept':True, 'normalize':False, 'copy_X':True,
 #                'max_iter':None, 'tol':0.001, 'solver':'auto', 'random_state':SEED}
-
 ##############################################################################################################
 # https://www.kaggle.com/mmueller/stacking-starter?scriptVersionId=390867
 # help lightgbm converge faster
