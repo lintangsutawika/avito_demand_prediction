@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--image_top', default=False)
 parser.add_argument('--agg_feat', default=False)
 parser.add_argument('--cluster', default=False)
-parser.add_argument('--emoji', default=False)
+parser.add_argument('--text', default=False)
 parser.add_argument('--stem', default=False)
 parser.add_argument('--ridge', default=False)
 parser.add_argument('--tfidf', default=False)
@@ -78,7 +78,7 @@ print("Selected Features:")
 print("image_top: {}".format(args.image_top))
 print("agg_feat: {}".format(args.agg_feat))
 print("cluster: {}".format(args.cluster))
-print("emoji: {}".format(args.emoji))
+print("text: {}".format(args.text))
 print("stem: {}".format(args.stem))
 print("ridge: {}".format(args.ridge))
 print("tfidf: {}".format(args.tfidf))
@@ -98,10 +98,21 @@ print('Train shape: {} Rows, {} Columns'.format(*training.shape))
 print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
 print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
+
+df["price"] = np.log1p(df["price"])
+df["image_top_1"].fillna(-999,inplace=True)
+# df["week_of_year"] = df['activation_date'].dt.week
+# df["day_of_month"] = df['activation_date'].dt.day
+df["day_of_week"] = df['activation_date'].dt.weekday
+
+df.drop(["activation_date","image"],axis=1,inplace=True)
+
 # Aggregated Features
 # https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
 if args.agg_feat == 'True':
-    print('added agg_feat')
+    ##############################################################################################################
+    print("Aggregated Feature")
+    ##############################################################################################################
     aggregated_features = pd.read_csv("../input/aggregated/aggregated_features.csv")
     df = df.merge(aggregated_features, on='user_id', how='left')
     df["avg_days_up_user"].fillna(-1, inplace=True)
@@ -114,24 +125,12 @@ train_index = training.index
 test_index = testing.index
 
 # Predicted Image Top 1
-if args.image_top == True:
+if args.image_top == 'True':
+    ##############################################################################################################
+    print("Predicted Image Top 1 Feature")
+    ##############################################################################################################
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
-
-##############################################################################################################
-print("Basic Feature Engineering")
-##############################################################################################################
-df["price"] = np.log1p(df["price"])
-df["image_top_1"].fillna(-999,inplace=True)
-
-##############################################################################################################
-print("Create Time Variables")
-##############################################################################################################
-# df["week_of_year"] = df['activation_date'].dt.week
-# df["day_of_month"] = df['activation_date'].dt.day
-df["day_of_week"] = df['activation_date'].dt.weekday
-
-df.drop(["activation_date","image"],axis=1,inplace=True)
 
 if args.cluster == 'True':
     ##############################################################################################################
@@ -178,7 +177,7 @@ if args.cluster == 'True':
     df['dbscan_cluster'].fillna(-1, inplace=True)
 
 ##############################################################################################################
-print("Encode Variables")
+print("Target Encoding for Categorical Features")
 ##############################################################################################################
 class TargetEncoder:
     # Adapted from https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
@@ -232,14 +231,10 @@ class TargetEncoder:
         ft_tst_series.index = tst_series.index
         return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
 
-encode_feature_start_time = time.time()
-print("Start Target Encoding")
-f_cats = ["region","city","parent_category_name","category_name","user_type"]
+f_cats = ["region","city","parent_category_name","category_name","user_type","param_1","param_2","param_3"]
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                               keep_original=True, cols=f_cats)
 training, testing = target_encode.encode(training, testing, y)
-print('[{}] Finished target encoding'.format(time.time() - encode_feature_start_time))
-
 # categorical = ["user_id","region","city","parent_category_name","category_name",
 #                 "user_type","image_top_1","param_1","param_2","param_3"]
 # print("Start Label Encoding")
@@ -248,27 +243,24 @@ print('[{}] Finished target encoding'.format(time.time() - encode_feature_start_
 # for col in categorical:
 #     df[col].fillna('Unknown')
 #     df[col] = lbl.fit_transform(df[col].astype(str))
+if args.text == 'True':
+    ##############################################################################################################
+    print("Text Features")
+    ##############################################################################################################
+    textfeats = ["description", "title"]
+    df['title'] = df['title'].apply(lambda x: cleanName(x))
+    df["description"]   = df["description"].apply(lambda x: cleanName(x))
+    df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
 
+    for cols in textfeats:
+        df[cols] = df[cols].astype(str)
+        df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
+        df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
+        df[cols + '_num_char'] = df[cols].apply(lambda comment: len(str(comment)))
+        df[cols + '_num_words'] = df[cols].apply(lambda comment: len(comment.split())) # Count number of Words
+        df[cols + '_num_unique_words'] = df[cols].apply(lambda comment: len(set(w for w in comment.split())))
+        df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
 
-##############################################################################################################
-print("Text Features")
-##############################################################################################################
-textfeats = ["description", "title"]
-df['title'] = df['title'].apply(lambda x: cleanName(x))
-df["description"]   = df["description"].apply(lambda x: cleanName(x))
-df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
-
-for cols in textfeats:
-    df[cols] = df[cols].astype(str)
-    df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
-    df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
-    df[cols + '_num_char'] = df[cols].apply(lambda comment: len(str(comment)))
-    df[cols + '_num_words'] = df[cols].apply(lambda comment: len(comment.split())) # Count number of Words
-    df[cols + '_num_unique_words'] = df[cols].apply(lambda comment: len(set(w for w in comment.split())))
-    df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
-
-if args.emoji == 'True':
-    print("added emoji")
     punct = set(string.punctuation)
     # print(punct)
     emoji = set()
