@@ -47,7 +47,7 @@ VALID = False
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_top', default=False)
 parser.add_argument('--agg_feat', default=False)
-parser.add_argument('--mean_encoding', default=False)
+parser.add_argument('--cluster', default=False)
 parser.add_argument('--emoji', default=False)
 parser.add_argument('--stem', default=False)
 parser.add_argument('--ridge', default=False)
@@ -75,7 +75,7 @@ print("Additional Features:")
 ##############################################################################################################
 print("image_top: {}".format(args.image_top))
 print("agg_feat: {}".format(args.agg_feat))
-print("mean_encoding: {}".format(args.mean_encoding))
+print("cluster: {}".format(args.cluster))
 print("emoji: {}".format(args.emoji))
 print("stem: {}".format(args.stem))
 print("ridge: {}".format(args.ridge))
@@ -94,7 +94,7 @@ if args.image_top == 'True':
 
 print("{}:{}".format(str(args.image_top),args.image_top))
 print("{}:{}".format(str(args.agg_feat),args.agg_feat))
-print("{}:{}".format(str(args.mean_encoding),args.mean_encoding))
+print("{}:{}".format(str(args.cluster),args.cluster))
 print("{}:{}".format(str(args.emoji),args.emoji))
 print("{}:{}".format(str(args.stem),args.stem))
 
@@ -223,31 +223,64 @@ for col in categorical:
 # ##############################################################################################################
 # print("\nMean Encoding")
 # ##############################################################################################################
-if args.mean_encoding == 'True':
+if args.cluster == 'True':
+    from sklearn.cluster import DBSCAN
     print("added mean_encoding")
     agg_cols = ['region', 'city', 'parent_category_name',
                 'category_name','image_top_1', 'user_type',
                 'item_seq_number','day_of_week']
                 # 'day_of_month','week_of_year']
 
-    # for category in tqdm(agg_cols):
-    #     gp = df.loc[train_index,:].groupby(category)['deal_probability']
-    #     mean = gp.mean()
-    #     std  = gp.std()
-    #     df[category + '_deal_probability_avg'] = df[category].map(mean)
-    #     df[category + '_deal_probability_std'] = df[category].map(std)
+    def embed_category(dataframe, categories, target_category):
+        group = dataframe[categories + [target_category]].groupby(categories)[target_category]
+        hist = group.agg(lambda x: ' '.join(str(x)))
+        group_index = hist.index
+        sentences = [list(x) for x,_ in group]
+        w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
+        return w2v, sentences
+        
+    def avg_w2v(Word2Vec, sentences):
+        w2v_feature = []
+        for sentence in tqdm(sentences):
+            wv = 0
+            sentlen = 0
+            for word in sentence:
+                try:
+                    wv += Word2Vec.wv[word]
+                    sentlen += 1
+                except:
+                    pass
+            wv = wv/sentlen
+            w2v_feature.append(wv)
+        return np.asarray(w2v_feature)
 
-    # for category in tqdm(agg_cols):
-    #     gp = df.loc[train_index,:].groupby(category)['price']
-    #     mean = gp.mean()
-    #     df[category + '_price_avg'] = df[category].map(mean)
-
-    # df.drop("deal_probability",axis=1, inplace=True)
+    w2v, sentences = embed_category(df, agg_cols, "deal_probability")
+    w2v_feature = avg_w2v(w2v, sentences)
+    db = DBSCAN(eps=0.3, min_samples=10).fit(w2v_feature)
+    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+    core_samples_mask[db.core_sample_indices_] = True
+    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
+    # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
+    df['dbscan_cluster'] = pd.Series(cluster_labels, index=df.index)
+    df['dbscan_cluster'].fillna(-1, inplace=True)
 
 ##############################################################################################################
-# https://www.kaggle.com/classtag/take-care-of-emoji-character-when-nlp/notebook
-print("Emoji Features")
+print("Text Features")
 ##############################################################################################################
+textfeats = ["description", "title"]
+df['title'] = df['title'].apply(lambda x: cleanName(x))
+df["description"]   = df["description"].apply(lambda x: cleanName(x))
+df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
+
+for cols in textfeats:
+    df[cols] = df[cols].astype(str)
+    df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
+    df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
+    df[cols + '_num_char'] = df[cols].apply(lambda comment: len(str(comment)))
+    df[cols + '_num_words'] = df[cols].apply(lambda comment: len(comment.split())) # Count number of Words
+    df[cols + '_num_unique_words'] = df[cols].apply(lambda comment: len(set(w for w in comment.split())))
+    df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
+
 if args.emoji == 'True':
     print("added emoji")
     punct = set(string.punctuation)
@@ -302,24 +335,6 @@ if args.emoji == 'True':
     df['r_desc_emo'] = (df['n_desc_emo']/(df['n_desc_len']+1))
 
     df['r_titl_des'] = (df['n_titl_len']/(df['n_desc_len']+1))
-
-
-##############################################################################################################
-print("Text Features")
-##############################################################################################################
-textfeats = ["description", "title"]
-df['title'] = df['title'].apply(lambda x: cleanName(x))
-df["description"]   = df["description"].apply(lambda x: cleanName(x))
-df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
-
-for cols in textfeats:
-    df[cols] = df[cols].astype(str)
-    df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
-    df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
-    df[cols + '_num_char'] = df[cols].apply(lambda comment: len(str(comment)))
-    df[cols + '_num_words'] = df[cols].apply(lambda comment: len(comment.split())) # Count number of Words
-    df[cols + '_num_unique_words'] = df[cols].apply(lambda comment: len(set(w for w in comment.split())))
-    df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
 
 ##############################################################################################################
 print("[TF-IDF] Term Frequency Inverse Document Frequency Stage")
@@ -475,37 +490,13 @@ lgbm_params =  {
     'num_leaves':450,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
+    # 'min_data_in_leaf': 500,
     # 'bagging_freq': 100,
-    'learning_rate': 0.01,
+    'learning_rate': 0.005,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
 }  
-
-# X_train, X_valid, y_train, y_valid = train_test_split(
-#     X, y, test_size=0.10, random_state=23)
-    
-# # LGBM Dataset Formatting 
-# lgbtrain = lgb.Dataset(X_train, y_train,
-#                 feature_name=tfvocab,
-#                 categorical_feature = categorical)
-# lgbvalid = lgb.Dataset(X_valid, y_valid,
-#                 feature_name=tfvocab,
-#                 categorical_feature = categorical)
-# del X, X_train; gc.collect()
-
-# model = lgb.train(
-#     lgbm_params,
-#     lgbtrain,
-#     num_boost_round=20000,
-#     valid_sets=[lgbtrain, lgbvalid],
-#     valid_names=['train','valid'],
-#     early_stopping_rounds=50,
-#     verbose_eval=100
-# )
-# print("Model Evaluation Stage")
-# print('RMSE:', np.sqrt(metrics.mean_squared_error(y_valid, model.predict(X_valid))))
-# del X_valid ; gc.collect()
 
 i = 0
 nFolds = 10
