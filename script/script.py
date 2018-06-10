@@ -32,7 +32,7 @@ from sklearn.model_selection import KFold as KFOLD
 # Tf-Idf
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.pipeline import FeatureUnion
-from scipy.sparse import hstack, csr_matrix
+from scipy.sparse import hstack, csr_matrix, issparse
 from nltk.corpus import stopwords
 import nltk.tokenize.toktok as toktok
 from nltk.stem.snowball import SnowballStemmer 
@@ -512,7 +512,7 @@ temp_prediction = []
 kf_ = KFOLD(n_splits=nFolds, shuffle=True, random_state=SEED)
 for train, valid in kf_.split(X):
     if i == 0:    
-        if scipy.sparse.issparse(X):
+        if issparse(X):
             X = X.tocsr()
         lgbtrain = lgb.Dataset(X[train], y[train],
                         feature_name=tfvocab,
