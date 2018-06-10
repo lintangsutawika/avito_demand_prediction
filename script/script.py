@@ -153,7 +153,7 @@ if args.cluster == 'True':
                 'category_name', 'user_type']
                 # 'day_of_month','week_of_year']
 
-    def embed_category(dataframe, categories):
+    def embed_category(dataframe, categories, "image_top_1"):
         group = dataframe[categories + [target_category]].groupby(categories)[target_category]
         hist = group.agg(lambda x: ' '.join(str(x)))
         group_index = hist.index
