@@ -30,6 +30,7 @@ from sklearn.cross_validation import KFold
 from sklearn.model_selection import KFold as KFOLD
 
 # Tf-Idf
+from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.pipeline import FeatureUnion
 from scipy.sparse import hstack, csr_matrix, issparse
@@ -134,7 +135,7 @@ if args.image_top == 'True':
 
 if args.cluster == 'True':
     ##############################################################################################################
-    print("Cluster Encoding")
+    print("Cluster Encoding Features")
     ##############################################################################################################
     from sklearn.cluster import DBSCAN
     agg_cols = ['region', 'city', 'parent_category_name',
@@ -374,7 +375,7 @@ if args.tfidf == "True":
     vectorizer.fit(df.to_dict('records'))
 
     ready_df = vectorizer.transform(df.to_dict('records'))
-    svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
+    svd_obj = TruncatedSVD(n_components=100, algorithm='randomized')
     svd_comp = svd_obj.fit_transform(ready_df)
     svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
     df = pd.concat([df, train_svd], axis=1)
