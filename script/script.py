@@ -21,6 +21,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import feature_selection
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
+import gensim
 
 # Gradient Boosting
 import lightgbm as lgb
@@ -91,12 +92,6 @@ if args.image_top == 'True':
     print('added image_top')
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv")
-
-print("{}:{}".format(str(args.image_top),args.image_top))
-print("{}:{}".format(str(args.agg_feat),args.agg_feat))
-print("{}:{}".format(str(args.cluster),args.cluster))
-print("{}:{}".format(str(args.emoji),args.emoji))
-print("{}:{}".format(str(args.stem),args.stem))
 
 ##############################################################################################################
 print("\nData Load Stage")
@@ -227,7 +222,7 @@ if args.cluster == 'True':
     from sklearn.cluster import DBSCAN
     print("added mean_encoding")
     agg_cols = ['region', 'city', 'parent_category_name',
-                'category_name','image_top_1', 'user_type',
+                'category_name', 'user_type',
                 'item_seq_number','day_of_week']
                 # 'day_of_month','week_of_year']
 
@@ -254,8 +249,10 @@ if args.cluster == 'True':
             w2v_feature.append(wv)
         return np.asarray(w2v_feature)
 
-    w2v, sentences = embed_category(df, agg_cols, "deal_probability")
+    print("Building W2V")
+    w2v, sentences = embed_category(df, agg_cols, "image_top_1")
     w2v_feature = avg_w2v(w2v, sentences)
+    print("Running DBSCAN")
     db = DBSCAN(eps=0.3, min_samples=10).fit(w2v_feature)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
