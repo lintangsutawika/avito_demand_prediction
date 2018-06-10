@@ -159,7 +159,7 @@ if args.cluster == 'True':
         group_index = hist.index
         sentences = [list(x) for x,_ in group]
         w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
-        return w2v, sentences
+        return w2v, group_index, sentences
         
     def avg_w2v(Word2Vec, sentences):
         w2v_feature = []
@@ -177,13 +177,13 @@ if args.cluster == 'True':
         return np.asarray(w2v_feature)
 
     print("Building W2V")
-    w2v, sentences = embed_category(df, agg_cols, "image_top_1")
+    w2v, group_index, sentences = embed_category(df, agg_cols, "image_top_1")
     w2v_feature = avg_w2v(w2v, sentences)
     print("Running DBSCAN")
     db = DBSCAN(eps=0.3, min_samples=100, n_jobs=-1).fit(w2v_feature)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
-    # cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
+    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
     # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
     df['dbscan_cluster'] = pd.Series(db.labels_, index=df.index)
     df['dbscan_cluster'].fillna(-1, inplace=True)
