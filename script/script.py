@@ -154,8 +154,10 @@ if args.cluster == 'True':
                 # 'day_of_month','week_of_year']
 
     def embed_category(dataframe, categories):
-        sentences = dataframe[categories].values
-        sentences = sentences.tolist()
+        group = dataframe[categories + [target_category]].groupby(categories)[target_category]
+        hist = group.agg(lambda x: ' '.join(str(x)))
+        group_index = hist.index
+        sentences = [list(x) for x,_ in group]
         w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
         return w2v, sentences
         
