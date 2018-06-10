@@ -375,10 +375,12 @@ if args.tfidf == "True":
     vectorizer.fit(df.to_dict('records'))
 
     ready_df = vectorizer.transform(df.to_dict('records'))
-    svd_obj = TruncatedSVD(n_components=100, algorithm='randomized')
-    svd_comp = svd_obj.fit_transform(ready_df)
+    n_comp = 100
+    svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
+    svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
     svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
-    df = pd.concat([df, train_svd], axis=1)
+    svd_comp.set_index(df.index, inplace=true)
+    df = pd.concat([df, svd_comp], axis=1)
 
     print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
     # tfvocab = vectorizer.get_feature_names()
