@@ -73,7 +73,7 @@ def rmse(y, y0):
     return np.sqrt(np.mean(np.power((y - y0), 2)))
 
 ##############################################################################################################
-print("Additional Features:")
+print("Selected Features:")
 ##############################################################################################################
 print("image_top: {}".format(args.image_top))
 print("agg_feat: {}".format(args.agg_feat))
@@ -85,18 +85,6 @@ print("tfidf: {}".format(args.tfidf))
 
 ##############################################################################################################
 print("Data Load Stage")
-##############################################################################################################
-training = pd.read_csv('../input/avito-demand-prediction/train.csv', parse_dates = ["activation_date"])
-testing = pd.read_csv('../input/avito-demand-prediction/test.csv', parse_dates = ["activation_date"])
-
-# Predicted Image Top 1
-if args.image_top == 'True':
-    print('added image_top')
-    training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv")
-    testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv")
-
-##############################################################################################################
-print("\nData Load Stage")
 ##############################################################################################################
 training = pd.read_csv('../input/avito-demand-prediction/train.csv', parse_dates = ["activation_date"])
 testing = pd.read_csv('../input/avito-demand-prediction/test.csv', parse_dates = ["activation_date"])
@@ -145,15 +133,15 @@ df["day_of_week"] = df['activation_date'].dt.weekday
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
 
-# ##############################################################################################################
-print("Cluster Encoding")
-# ##############################################################################################################
 if args.cluster == 'True':
+    ##############################################################################################################
+    print("Cluster Encoding")
+    ##############################################################################################################
     from sklearn.cluster import DBSCAN
-    print("added cluster_encoding")
     agg_cols = ['region', 'city', 'parent_category_name',
                 'category_name', 'user_type']
                 # 'day_of_month','week_of_year']
+    print("Clustering features: {}".format(agg_cols))
 
     def embed_category(dataframe, categories, target_category):
         group = dataframe[categories + [target_category]].groupby(categories)[target_category]
@@ -246,20 +234,20 @@ class TargetEncoder:
 
 encode_feature_start_time = time.time()
 print("Start Target Encoding")
-f_cats = ["region","city","parent_category_name","category_name","user_type","image_top_1"]
+f_cats = ["region","city","parent_category_name","category_name","user_type"]
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                               keep_original=True, cols=f_cats)
 training, testing = target_encode.encode(training, testing, y)
 print('[{}] Finished target encoding'.format(time.time() - encode_feature_start_time))
 
-categorical = ["user_id","region","city","parent_category_name","category_name",
-                "user_type","image_top_1","param_1","param_2","param_3"]
-print("Start Label Encoding")
-# Encoder:
-lbl = preprocessing.LabelEncoder()
-for col in categorical:
-    df[col].fillna('Unknown')
-    df[col] = lbl.fit_transform(df[col].astype(str))
+# categorical = ["user_id","region","city","parent_category_name","category_name",
+#                 "user_type","image_top_1","param_1","param_2","param_3"]
+# print("Start Label Encoding")
+# # Encoder:
+# lbl = preprocessing.LabelEncoder()
+# for col in categorical:
+#     df[col].fillna('Unknown')
+#     df[col] = lbl.fit_transform(df[col].astype(str))
 
 
 ##############################################################################################################
@@ -394,13 +382,15 @@ if args.tfidf == "True":
     vectorizer.fit(df.to_dict('records'))
 
     ready_df = vectorizer.transform(df.to_dict('records'))
-    print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
-    tfvocab = vectorizer.get_feature_names()
-    print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
+    svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
+    svd_comp = svd_obj.fit_transform(ready_df)
+    svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
+    df = pd.concat([df, train_svd], axis=1)
 
-    # mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
-    # ready_df = ready_df[:,mask]
-    # tfvocab = list(np.asarray(tfvocab)[mask])
+    print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
+    # tfvocab = vectorizer.get_feature_names()
+    tfvocab = svd_comp.columns
+    print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
 # Drop Text Cols
 textfeats = ["description", "title"]
