@@ -379,7 +379,7 @@ if args.tfidf == "True":
     svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
     svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
     svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
-    svd_comp.set_index(df.index, inplace=true)
+    svd_comp.set_index(df.index, inplace=True)
     df = pd.concat([df, svd_comp], axis=1)
 
     print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
