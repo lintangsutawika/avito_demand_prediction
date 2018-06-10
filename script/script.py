@@ -175,7 +175,7 @@ if args.cluster == 'True':
         return np.asarray(w2v_feature)
 
     print("Building W2V")
-    w2v, sentences = embed_category(df, agg_cols, "image_top_1")
+    w2v, sentences = embed_category(df, agg_cols)
     w2v_feature = avg_w2v(w2v, sentences)
     print("Running DBSCAN")
     db = DBSCAN(eps=0.3, min_samples=100, n_jobs=-1).fit(w2v_feature)
