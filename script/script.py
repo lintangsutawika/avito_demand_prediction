@@ -239,12 +239,12 @@ training, testing = target_encode.encode(training, testing, y)
 
 categorical = ["user_id","region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3"]
-# print("Start Label Encoding")
-# # Encoder:
-# lbl = preprocessing.LabelEncoder()
-# for col in categorical:
-#     df[col].fillna('Unknown')
-#     df[col] = lbl.fit_transform(df[col].astype(str))
+print("Start Label Encoding")
+# Encoder:
+lbl = preprocessing.LabelEncoder()
+for col in categorical:
+    df[col].fillna('Unknown')
+    df[col] = lbl.fit_transform(df[col].astype(str))
 
 if args.text == 'True':
     ##############################################################################################################
@@ -506,10 +506,10 @@ for train, valid in kf_.split(X):
             X = X.tocsr()
         lgbtrain = lgb.Dataset(X[train], y[train],
                         feature_name=tfvocab,
-                        categorical_feature = categorical)
+                        categorical_feature = "")
         lgbvalid = lgb.Dataset(X[valid], y[valid],
                         feature_name=tfvocab,
-                        categorical_feature = categorical)
+                        categorical_feature = "")
 
         model = lgb.train(
             lgbm_params,
