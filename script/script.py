@@ -143,6 +143,52 @@ df["day_of_week"] = df['activation_date'].dt.weekday
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
 
+# ##############################################################################################################
+print("Cluster Encoding")
+# ##############################################################################################################
+if args.cluster == 'True':
+    from sklearn.cluster import DBSCAN
+    print("added cluster_encoding")
+    agg_cols = ['region', 'city', 'parent_category_name',
+                'category_name', 'user_type',
+                'item_seq_number','day_of_week']
+                # 'day_of_month','week_of_year']
+
+    def embed_category(dataframe, categories, target_category):
+        group = dataframe[categories + [target_category]].groupby(categories)[target_category]
+        hist = group.agg(lambda x: ' '.join(str(x)))
+        group_index = hist.index
+        sentences = [list(x) for x,_ in group]
+        w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
+        return w2v, sentences
+        
+    def avg_w2v(Word2Vec, sentences):
+        w2v_feature = []
+        for sentence in tqdm(sentences):
+            wv = 0
+            sentlen = 0
+            for word in sentence:
+                try:
+                    wv += Word2Vec.wv[word]
+                    sentlen += 1
+                except:
+                    pass
+            wv = wv/sentlen
+            w2v_feature.append(wv)
+        return np.asarray(w2v_feature)
+
+    print("Building W2V")
+    w2v, sentences = embed_category(df, agg_cols, "image_top_1")
+    w2v_feature = avg_w2v(w2v, sentences)
+    print("Running DBSCAN")
+    db = DBSCAN(eps=0.3, min_samples=10).fit(w2v_feature)
+    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+    core_samples_mask[db.core_sample_indices_] = True
+    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
+    # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
+    df['dbscan_cluster'] = pd.Series(cluster_labels, index=df.index)
+    df['dbscan_cluster'].fillna(-1, inplace=True)
+
 ##############################################################################################################
 print("Encode Variables")
 ##############################################################################################################
@@ -215,51 +261,6 @@ for col in categorical:
     df[col].fillna('Unknown')
     df[col] = lbl.fit_transform(df[col].astype(str))
 
-# ##############################################################################################################
-# print("\nMean Encoding")
-# ##############################################################################################################
-if args.cluster == 'True':
-    from sklearn.cluster import DBSCAN
-    print("added mean_encoding")
-    agg_cols = ['region', 'city', 'parent_category_name',
-                'category_name', 'user_type',
-                'item_seq_number','day_of_week']
-                # 'day_of_month','week_of_year']
-
-    def embed_category(dataframe, categories, target_category):
-        group = dataframe[categories + [target_category]].groupby(categories)[target_category]
-        hist = group.agg(lambda x: ' '.join(str(x)))
-        group_index = hist.index
-        sentences = [list(x) for x,_ in group]
-        w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
-        return w2v, sentences
-        
-    def avg_w2v(Word2Vec, sentences):
-        w2v_feature = []
-        for sentence in tqdm(sentences):
-            wv = 0
-            sentlen = 0
-            for word in sentence:
-                try:
-                    wv += Word2Vec.wv[word]
-                    sentlen += 1
-                except:
-                    pass
-            wv = wv/sentlen
-            w2v_feature.append(wv)
-        return np.asarray(w2v_feature)
-
-    print("Building W2V")
-    w2v, sentences = embed_category(df, agg_cols, "image_top_1")
-    w2v_feature = avg_w2v(w2v, sentences)
-    print("Running DBSCAN")
-    db = DBSCAN(eps=0.3, min_samples=10).fit(w2v_feature)
-    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-    core_samples_mask[db.core_sample_indices_] = True
-    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
-    # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
-    df['dbscan_cluster'] = pd.Series(cluster_labels, index=df.index)
-    df['dbscan_cluster'].fillna(-1, inplace=True)
 
 ##############################################################################################################
 print("Text Features")
