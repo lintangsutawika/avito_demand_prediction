@@ -150,8 +150,7 @@ if args.cluster == 'True':
     from sklearn.cluster import DBSCAN
     print("added cluster_encoding")
     agg_cols = ['region', 'city', 'parent_category_name',
-                'category_name', 'user_type',
-                'item_seq_number','day_of_week']
+                'category_name', 'user_type']
                 # 'day_of_month','week_of_year']
 
     def embed_category(dataframe, categories, target_category):
