@@ -183,9 +183,8 @@ if args.cluster == 'True':
     db = DBSCAN(eps=0.3, min_samples=100, n_jobs=-1).fit(w2v_feature)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
-    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
-    # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
-    df['dbscan_cluster'] = pd.Series(db.labels_, index=df.index)
+    complete_labels = [db.labels_[sentences.index(entry)] for entry in tqdm(df[agg_cols].values.tolist())]
+    df['dbscan_cluster'] = pd.Series(complete_labels, index=df.index)
     df['dbscan_cluster'].fillna(-1, inplace=True)
 
 ##############################################################################################################
