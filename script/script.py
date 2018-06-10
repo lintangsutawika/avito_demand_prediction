@@ -236,14 +236,16 @@ f_cats = ["region","city","parent_category_name","category_name","user_type","pa
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                               keep_original=True, cols=f_cats)
 training, testing = target_encode.encode(training, testing, y)
-# categorical = ["user_id","region","city","parent_category_name","category_name",
-#                 "user_type","image_top_1","param_1","param_2","param_3"]
-# print("Start Label Encoding")
-# # Encoder:
-# lbl = preprocessing.LabelEncoder()
-# for col in categorical:
-#     df[col].fillna('Unknown')
-#     df[col] = lbl.fit_transform(df[col].astype(str))
+
+categorical = ["user_id","region","city","parent_category_name","category_name",
+                "user_type","image_top_1","param_1","param_2","param_3"]
+print("Start Label Encoding")
+# Encoder:
+lbl = preprocessing.LabelEncoder()
+for col in categorical:
+    df[col].fillna('Unknown')
+    df[col] = lbl.fit_transform(df[col].astype(str))
+
 if args.text == 'True':
     ##############################################################################################################
     print("Text Features")
@@ -448,14 +450,17 @@ if args.ridge == "True":
 ##############################################################################################################
 print("Combine Dense Features with Sparse Text Bag of Words Features")
 ##############################################################################################################
-if args.tfidf == "True":
-    X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
-    testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
-    tfvocab = df.columns.tolist() + tfvocab
-else:
-    X = df.loc[train_index,:].values
-    testing = df.loc[test_index,:].values
-    tfvocab = df.columns.tolist()
+# if args.tfidf == "True":
+#     X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
+#     testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
+#     tfvocab = df.columns.tolist() + tfvocab
+# else:
+#     X = df.loc[train_index,:].values
+#     testing = df.loc[test_index,:].values
+#     tfvocab = df.columns.tolist()
+X = df.loc[train_index,:].values
+testing = df.loc[test_index,:].values
+tfvocab = df.columns.tolist()
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
