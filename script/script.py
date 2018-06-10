@@ -153,11 +153,9 @@ if args.cluster == 'True':
                 'category_name', 'user_type']
                 # 'day_of_month','week_of_year']
 
-    def embed_category(dataframe, categories, target_category):
-        group = dataframe[categories + [target_category]].groupby(categories)[target_category]
-        hist = group.agg(lambda x: ' '.join(str(x)))
-        group_index = hist.index
-        sentences = [list(x) for x,_ in group]
+    def embed_category(dataframe, categories):
+        sentences = dataframe[categories].values
+        sentences = sentences.tolist()
         w2v = gensim.models.Word2Vec(sentences, min_count=1, size=500)
         return w2v, sentences
         
@@ -180,12 +178,12 @@ if args.cluster == 'True':
     w2v, sentences = embed_category(df, agg_cols, "image_top_1")
     w2v_feature = avg_w2v(w2v, sentences)
     print("Running DBSCAN")
-    db = DBSCAN(eps=0.3, min_samples=10).fit(w2v_feature)
+    db = DBSCAN(eps=0.3, min_samples=100, n_jobs=-1).fit(w2v_feature)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
-    cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
+    # cluster_labels = pd.Series(db.labels_, name='dbscan_cluster', index=group_index)
     # df[c + '_cluster'] = df[c].map(cluster_labels).fillna(-1).astype(int)
-    df['dbscan_cluster'] = pd.Series(cluster_labels, index=df.index)
+    df['dbscan_cluster'] = pd.Series(db.labels_, index=df.index)
     df['dbscan_cluster'].fillna(-1, inplace=True)
 
 ##############################################################################################################
