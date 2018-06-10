@@ -471,7 +471,7 @@ lgbm_params =  {
     'boosting_type': 'gbdt',
     'objective': 'regression',
     'metric': 'rmse',
-    'max_depth': 15,
+    # 'max_depth': 15,
     'num_leaves':450,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
