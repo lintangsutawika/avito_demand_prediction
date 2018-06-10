@@ -52,6 +52,7 @@ parser.add_argument('--cluster', default=False)
 parser.add_argument('--emoji', default=False)
 parser.add_argument('--stem', default=False)
 parser.add_argument('--ridge', default=False)
+parser.add_argument('--tfidf', default=False)
 
 args = parser.parse_args()
 
@@ -80,6 +81,7 @@ print("cluster: {}".format(args.cluster))
 print("emoji: {}".format(args.emoji))
 print("stem: {}".format(args.stem))
 print("ridge: {}".format(args.ridge))
+print("tfidf: {}".format(args.tfidf))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -332,72 +334,73 @@ if args.emoji == 'True':
 
     df['r_titl_des'] = (df['n_titl_len']/(df['n_desc_len']+1))
 
-##############################################################################################################
-print("[TF-IDF] Term Frequency Inverse Document Frequency Stage")
-##############################################################################################################
-if args.stem == 'True':
-    print("With stemming")
-    stemmer = SnowballStemmer("russian") 
-    tokenizer = toktok.ToktokTokenizer()
+if args.tfidf == "True":
+    ##############################################################################################################
+    print("[TF-IDF] Term Frequency Inverse Document Frequency Stage")
+    ##############################################################################################################
+    if args.stem == 'True':
+        print("With stemming")
+        stemmer = SnowballStemmer("russian") 
+        tokenizer = toktok.ToktokTokenizer()
 
-    def stemRussian(word, stemmer):
-        try:
-            word.encode(encoding='utf-8').decode('ascii')
-            return word
-        except:
-            return stemmer.stem(word)
+        def stemRussian(word, stemmer):
+            try:
+                word.encode(encoding='utf-8').decode('ascii')
+                return word
+            except:
+                return stemmer.stem(word)
 
-    tqdm.pandas()
-    if "stemmed_description.csv" not in os.listdir("."):
-        df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
-        df['description'].to_csv("stemmed_description.csv", index= False, header='description')
-        df.to_pickle("stemmed")
-    else:
-        pass
-        # df['description'] = pd.read_csv("stemmed_description.csv").values
-        # read_pickle
-russian_stop = set(stopwords.words('russian'))
-tfidf_para = {
-    "stop_words": russian_stop,
-    "analyzer": 'word',
-    "token_pattern": r'\w{1,}',
-    "sublinear_tf": True,
-    "dtype": np.float32,
-    "norm": 'l2',
-    #"min_df":5,
-    #"max_df":.9,
-    "smooth_idf":False
-}
+        tqdm.pandas()
+        if "stemmed_description.csv" not in os.listdir("."):
+            df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+            df['description'].to_csv("stemmed_description.csv", index= False, header='description')
+            df.to_pickle("stemmed")
+        else:
+            pass
+            # df['description'] = pd.read_csv("stemmed_description.csv").values
+            # read_pickle
+    russian_stop = set(stopwords.words('russian'))
+    tfidf_para = {
+        "stop_words": russian_stop,
+        "analyzer": 'word',
+        "token_pattern": r'\w{1,}',
+        "sublinear_tf": True,
+        "dtype": np.float32,
+        "norm": 'l2',
+        #"min_df":5,
+        #"max_df":.9,
+        "smooth_idf":False
+    }
 
-def get_col(col_name): return lambda x: x[col_name]
-##I added to the max_features of the description. It did not change my score much but it may be worth investigating
-vectorizer = FeatureUnion([
-        ('description',TfidfVectorizer(
-            ngram_range=(1, 2),
-            max_features=17000,
-            **tfidf_para,
-            preprocessor=get_col('description'))),
-        ('title',CountVectorizer(
-            ngram_range=(1, 2),
-            stop_words = russian_stop,
-            #max_features=7000,
-            preprocessor=get_col('title')))
-    ])
+    def get_col(col_name): return lambda x: x[col_name]
+    ##I added to the max_features of the description. It did not change my score much but it may be worth investigating
+    vectorizer = FeatureUnion([
+            ('description',TfidfVectorizer(
+                ngram_range=(1, 2),
+                max_features=17000,
+                **tfidf_para,
+                preprocessor=get_col('description'))),
+            ('title',CountVectorizer(
+                ngram_range=(1, 2),
+                stop_words = russian_stop,
+                #max_features=7000,
+                preprocessor=get_col('title')))
+        ])
 
-start_vect=time.time()
+    start_vect=time.time()
 
-#Fit my vectorizer on the entire dataset instead of the training rows
-#Score improved by .0001
-vectorizer.fit(df.to_dict('records'))
+    #Fit my vectorizer on the entire dataset instead of the training rows
+    #Score improved by .0001
+    vectorizer.fit(df.to_dict('records'))
 
-ready_df = vectorizer.transform(df.to_dict('records'))
-print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
-tfvocab = vectorizer.get_feature_names()
-print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
+    ready_df = vectorizer.transform(df.to_dict('records'))
+    print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
+    tfvocab = vectorizer.get_feature_names()
+    print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
-# mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
-# ready_df = ready_df[:,mask]
-# tfvocab = list(np.asarray(tfvocab)[mask])
+    # mask = np.where(ready_df.getnnz(axis=0) > 10)[0]
+    # ready_df = ready_df[:,mask]
+    # tfvocab = list(np.asarray(tfvocab)[mask])
 
 # Drop Text Cols
 textfeats = ["description", "title"]
@@ -460,9 +463,15 @@ if args.ridge == "True":
 ##############################################################################################################
 print("Combine Dense Features with Sparse Text Bag of Words Features")
 ##############################################################################################################
-X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
-testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
-tfvocab = df.columns.tolist() + tfvocab
+if args.tfidf == "True":
+    X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
+    testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
+    tfvocab = df.columns.tolist() + tfvocab
+else:
+    X = df.loc[train_index,:].values
+    testing = df.loc[test_index,:].values
+    tfvocab = df.columns.tolist()
+
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
 print("Feature Names Length: ".format(len(tfvocab)))
@@ -487,7 +496,7 @@ lgbm_params =  {
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
-    # 'bagging_freq': 100,
+    'bagging_freq': 50,
     'learning_rate': 0.005,
     'verbose': 0,
     'lambda_l1': 10,
@@ -503,7 +512,8 @@ temp_prediction = []
 kf_ = KFOLD(n_splits=nFolds, shuffle=True, random_state=SEED)
 for train, valid in kf_.split(X):
     if i == 0:    
-        X = X.tocsr()
+        if scipy.sparse.issparse(X):
+            X = X.tocsr()
         lgbtrain = lgb.Dataset(X[train], y[train],
                         feature_name=tfvocab,
                         categorical_feature = "")
