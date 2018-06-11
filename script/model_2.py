@@ -198,6 +198,12 @@ if args.cat2vec == 'True':
 
 if args.mean == "True":
     pass
+    df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
+    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
+    df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
+    df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
     # agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
     #         'image_top_1', 'user_type','item_seq_number','day_of_week'];
     # for c in tqdm(agg_cols):
@@ -326,7 +332,7 @@ for train, valid in kf_.split(X):
         print('Fold {}, RMSE: {}'.format(i,validation_score))
         cv_score += validation_score
         models.append(model)
-        print(model.feature_importance())
+        feature = pd.DataFrame(data={'feature':model.feature_name(),'importance':model.feature_importance()})
     else:
         break
 
