@@ -55,9 +55,6 @@ parser.add_argument('--categorical', default=False)
 parser.add_argument('--cat2vec', default=False)
 args = parser.parse_args()
 
-categorical = ["user_id","region","city","parent_category_name","category_name",
-                "user_type","image_top_1","param_1","param_2","param_3"]
-
 def rmse(y, y0):
     assert len(y) == len(y0)
     return np.sqrt(np.mean(np.power((y - y0), 2)))
@@ -93,6 +90,9 @@ df["image_top_1"].fillna(-999,inplace=True)
 # df["week_of_year"] = df['activation_date'].dt.week
 # df["day_of_month"] = df['activation_date'].dt.day
 df["day_of_week"] = df['activation_date'].dt.weekday
+
+categorical = ["user_id","region","city","parent_category_name","category_name",
+                "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
 
@@ -184,8 +184,30 @@ if args.categorical == "True":
     training, testing = target_encode.encode(training, testing, y)
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
     
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        df[col].fillna('Unknown')
+        df[col] = lbl.fit_transform(df[col].astype(str))
+        
 if args.cat2vec == 'True':
     from gensim.models import Word2Vec # categorical feature to vectors
+
+if args.mean == "True":
+    agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
+            'image_top_1', 'user_type','item_seq_number','day_of_week'];
+    for c in tqdm(agg_cols):
+        gp = tr.groupby(c)['deal_probability']
+        mean = gp.mean()
+        std  = gp.std()
+        data[c + '_deal_probability_avg'] = data[c].map(mean)
+        data[c + '_deal_probability_std'] = data[c].map(std)
+
+    for c in tqdm(agg_cols):
+        gp = tr.groupby(c)['price']
+        mean = gp.mean()
+        data[c + '_price_avg'] = data[c].map(mean)
 
 if args.text == 'True':
     ##############################################################################################################
