@@ -246,7 +246,7 @@ if args.cat2vec == 'True':
 
     c2v_model = fit_cat2vec_model()
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
-                        columns=['cat2vec_0', 'cat2vec_1', 'cat2vec_2', 'cat2vec_3', 'cat2vec_4'], index=df.index)
+                        columns=cat_cols, index=df.index)
     df = pd.concat([df,temp], axis=1)
 
 if args.mean == "True":
