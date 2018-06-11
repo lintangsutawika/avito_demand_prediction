@@ -8,12 +8,12 @@ notebookstart= time.time()
 import os
 import gc
 import sys
-import logging
 import argparse
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-
 from tqdm import tqdm
+
+#
 
 # Models Packages
 from sklearn import metrics
@@ -52,20 +52,11 @@ parser.add_argument('--image_top', default=False)
 parser.add_argument('--agg_feat', default=False)
 parser.add_argument('--text', default=False)
 parser.add_argument('--categorical', default=False)
-
+parser.add_argument('--cat2vec', default=False)
 args = parser.parse_args()
 
-def cleanName(text):
-    try:
-        textProc = text.lower()
-        # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
-        #regex = re.compile(u'[^[:alpha:]]')
-        #textProc = regex.sub(" ", textProc)
-        textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
-        textProc = " ".join(textProc.split())
-        return textProc
-    except:
-        return "name error"
+categorical = ["user_id","region","city","parent_category_name","category_name",
+                "user_type","image_top_1","param_1","param_2","param_3"]
 
 def rmse(y, y0):
     assert len(y) == len(y0)
@@ -79,6 +70,7 @@ print("image_top: {}".format(args.image_top))
 print("agg_feat: {}".format(args.agg_feat))
 print("text: {}".format(args.text))
 print("categorical: {}".format(args.categorical))
+print("cat2vec: {}".format(args.cat2vec))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -185,27 +177,35 @@ if args.categorical == "True":
             ft_tst_series.index = tst_series.index
             return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
 
-    f_cats = ["region","city","parent_category_name","category_name","user_type","param_1","param_2","param_3"]
+    f_cats = ["region","city","parent_category_name","category_name","user_type","param_1","param_2","param_3","image_top_1"]
+    te_cats = [cat+"_te" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
     training, testing = target_encode.encode(training, testing, y)
-
-    categorical = ["user_id","region","city","parent_category_name","category_name",
-                    "user_type","image_top_1","param_1","param_2","param_3"]
-    print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        df[col].fillna('Unknown')
-        df[col] = lbl.fit_transform(df[col].astype(str))
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
+    
+if args.cat2vec == 'True':
+    from gensim.models import Word2Vec # categorical feature to vectors
 
 if args.text == 'True':
     ##############################################################################################################
     print("Text Features")
     ##############################################################################################################
+    def cleanName(text):
+        try:
+            textProc = text.lower()
+            # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
+            #regex = re.compile(u'[^[:alpha:]]')
+            #textProc = regex.sub(" ", textProc)
+            textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
+            textProc = " ".join(textProc.split())
+            return textProc
+        except:
+            return "name error"
+
     textfeats = ["description", "title"]
-    df['title'] = df['title'].apply(lambda x: cleanName(x))
-    df["description"]   = df["description"].apply(lambda x: cleanName(x))
+    # df['title'] = df['title'].apply(lambda x: cleanName(x))
+    # df["description"]   = df["description"].apply(lambda x: cleanName(x))
     df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
     punct = set(string.punctuation)
     emoji = set()
@@ -217,14 +217,14 @@ if args.text == 'True':
                 emoji.add(c)
         df[cols] = df[cols].astype(str)
         df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
+        df[cols + '_num_capital'] = df[cols].apply(lambda x: sum(c.isupper() for c in x))
         df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
-        df[cols + '_num_char'] = df[cols].fillna('').apply(lambda x: len(str(x)))
-        df[cols + '_num_words'] = df[cols].fillna('').apply(lambda x: len(x.split())) # Count number of Words
-        df[cols + '_num_digits'] = df[cols].fillna('').apply(lambda x: sum(c.isdigit() for c in x))
-        df[cols + '_num_capital'] = df[cols].fillna('').apply(lambda x: sum(c.isupper() for c in x))
-        df[cols + '_num_spaces'] = df[cols].fillna('').apply(lambda x: sum(c.isspace() for c in x))
-        df[cols + '_num_punctuations'] = df[cols].fillna('').apply(lambda x: sum(c in punct for c in x))
-        df[cols + '_num_emoji'] = df[cols].fillna('').apply(lambda x: sum(c in emoji for c in x))
+        df[cols + '_num_char'] = df[cols].apply(lambda x: len(str(x)))
+        df[cols + '_num_words'] = df[cols].apply(lambda x: len(x.split())) # Count number of Words
+        df[cols + '_num_digits'] = df[cols].apply(lambda x: sum(c.isdigit() for c in x))
+        df[cols + '_num_spaces'] = df[cols].apply(lambda x: sum(c.isspace() for c in x))
+        df[cols + '_num_punctuations'] = df[cols].apply(lambda x: sum(c in punct for c in x))
+        df[cols + '_num_emoji'] = df[cols].apply(lambda x: sum(c in emoji for c in x))
         df[cols + '_num_unique_words'] = df[cols].apply(lambda x: len(set(w for w in x.split())))
 
         df[cols + '_digits_vs_char'] = df[cols + '_num_digits'] / df[cols + '_num_char'] * 100
@@ -301,6 +301,7 @@ for train, valid in kf_.split(X):
         print('Fold {}, RMSE: {}'.format(i,validation_score))
         cv_score += validation_score
         models.append(model)
+        print(model.feature_importance)
     else:
         break
 
