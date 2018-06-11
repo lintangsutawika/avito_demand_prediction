@@ -375,18 +375,10 @@ if args.tfidf == "True":
     #Fit my vectorizer on the entire dataset instead of the training rows
     #Score improved by .0001
     vectorizer.fit(df.to_dict('records'))
-
     ready_df = vectorizer.transform(df.to_dict('records'))
-    # n_comp = 1000
-    # svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
-    # svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
-    # svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
-    # svd_comp.set_index(df.index, inplace=True)
-    # df = pd.concat([df, svd_comp], axis=1)
-
     print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
-    # tfvocab = vectorizer.get_feature_names()
-    tfvocab = svd_comp.columns
+    tfvocab = vectorizer.get_feature_names()
+    # tfvocab = svd_comp.columns
     print("Vectorization Runtime: %0.2f Minutes"%((time.time() - start_vect)/60))
 
 # Drop Text Cols
@@ -484,7 +476,7 @@ lgbm_params =  {
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
     'bagging_freq': 50,
-    'learning_rate': 0.01,
+    'learning_rate': 0.001,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
@@ -536,7 +528,7 @@ for i,model in enumerate(models):
     model_prediction = model_prediction + np.asarray(model.predict(testing))
 model_prediction = model_prediction/len(models)
 #Mixing lightgbm with ridge. I haven't really tested if this improves the score or not
-#blend = 0.95*model_prediction + 0.05*ridge_oof_test[:,0]
+#blend = 0.75*model_prediction + 0.25*ridge_oof_test[:,0]
 
 model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
 model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
