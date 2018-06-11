@@ -393,7 +393,7 @@ if args.wordbatch == 'True':
     df['ridge_preds'] = ridge_preds
     gc.collect()
 
-df.drop(textfeats+"user_id",axis=1, inplace=True)
+df.drop(textfeats+["user_id"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
