@@ -13,7 +13,10 @@ import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from tqdm import tqdm
 
-#
+# Word Batch
+import wordbatch
+from wordbatch.extractors import WordBag
+from wordbatch.models import FM_FTRL
 
 # Models Packages
 from sklearn import metrics
@@ -90,6 +93,7 @@ print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
 
 df["price"] = np.log1p(df["price"])
+df["price"].fillna(-1, inplace=True)
 df["image_top_1"].fillna(-999,inplace=True)
 # df["week_of_year"] = df['activation_date'].dt.week
 # df["day_of_month"] = df['activation_date'].dt.day
@@ -186,7 +190,8 @@ if args.target == "True":
     te_cats = [cat+"_te" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
-    training, testing = target_encode.encode(training, testing, y)
+    # training, testing = target_encode.encode(training, testing, y)
+    training, testing = target_encode.encode(training, testing, df['price'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
 if args.cat2vec == 'True':
@@ -272,6 +277,35 @@ if args.text == 'True':
         df[cols + '_punctuations_vs_char'] = df[cols + '_num_punctuations'] / df[cols + '_num_char'] * 100
         df[cols + '_emoji_vs_char'] = df[cols + '_num_emoji'] / df[cols + '_num_char'] * 100
         df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
+
+if args.text == 'True':
+    ##############################################################################################################
+    print("Text Features")
+    ##############################################################################################################
+    def cleanName(text):
+        try:
+            textProc = text.lower()
+            # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
+            #regex = re.compile(u'[^[:alpha:]]')
+            #textProc = regex.sub(" ", textProc)
+            textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
+            textProc = " ".join(textProc.split())
+            return textProc
+        except:
+            return "name error"
+    df["description"]   = df["description"].apply(lambda x: cleanName(x))
+    wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
+                                                                  "hash_ngrams_weights": [1.0, 1.0],
+                                                                  "hash_size": 2 ** 28,
+                                                                  "norm": "l2",
+                                                                  "tf": 1.0,
+                                                                  "idf": None}), procs=8)
+    wb.dictionary_freeze = True
+    X_description = wb.fit_transform(df['description'].fillna(''))
+    print(X_description_train.shape)
+    del(wb)
+    gc.collect()
+
 
 df.drop(textfeats,axis=1, inplace=True)
 if args.build_features == "True":
