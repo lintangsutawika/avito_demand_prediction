@@ -328,6 +328,10 @@ if args.wordbatch == 'True':
     ##############################################################################################################
     print("WordBatch Features")
     ##############################################################################################################
+    from sklearn.metrics import mean_squared_error
+    from math import sqrt
+
+    kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
     stopwords = {x: 1 for x in stopwords.words('russian')}
     
     def normalize_text(text):
@@ -348,7 +352,48 @@ if args.wordbatch == 'True':
             return textProc
         except:
             return "name error"
-    df["description"]   = df["description"].apply(lambda x: cleanName(x))
+
+    df["title"] = df["title"].apply(lambda x: cleanName(x))
+    wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
+                                                                  "hash_ngrams_weights": [1.5, 1.0],
+                                                                  "hash_size": 2 ** 29,
+                                                                  "norm": None,
+                                                                  "tf": 'binary',
+                                                                  "idf": None,
+                                                                  }), procs=8)
+    wb.dictionary_freeze = True
+    X_title = wb.fit_transform(df['title'].fillna(''))
+    del(wb)
+    gc.collect()
+    mask = np.where(X_title.getnnz(axis=0) > 3)[0]
+    X_title = X_title[:, mask]
+    print(X_title.shape)
+
+    oof_train = np.zeros((ntrain,))
+    oof_test = np.zeros((ntest,))
+    oof_test_skf = np.empty((NFOLDS, ntest))
+
+    for i, (train_ind, test_ind) in enumerate(kf):
+        print('Ridge Regression, Fold {}'.format(i))
+        x_tr = X_title[:ntrain][train_ind]
+        y_tr = y[train_ind]
+        x_te = X_title[:ntrain][test_ind]
+
+        model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
+        model.fit(x_tr, y_tr)
+        oof_train[test_ind] = model.predict(x_te)
+        oof_test_skf[i, :] = model.predict(X_title[ntrain:])
+
+    oof_test[:] = oof_test_skf.mean(axis=0)
+    oof_train = oof_train.reshape(-1, 1)
+    oof_test = oof_test.reshape(-1, 1)
+    rms = sqrt(mean_squared_error(y, oof_train))
+    print('Ridge OOF RMSE: {}'.format(rms))
+    ridge_preds = np.concatenate([oof_train, oof_test])
+    df['title_ridge_preds'] = ridge_preds
+    gc.collect()
+
+    df["description"] = df["description"].apply(lambda x: cleanName(x))
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.0, 1.0],
                                                                   "hash_size": 2 ** 28,
@@ -362,12 +407,6 @@ if args.wordbatch == 'True':
     mask = np.where(X_description.getnnz(axis=0) > 8)[0]
     X_description = X_description[:, mask]
     print(X_description.shape)
-
-    from sklearn.metrics import mean_squared_error
-    from math import sqrt
-
-    kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
-
 
     oof_train = np.zeros((ntrain,))
     oof_test = np.zeros((ntest,))
@@ -390,15 +429,15 @@ if args.wordbatch == 'True':
     rms = sqrt(mean_squared_error(y, oof_train))
     print('Ridge OOF RMSE: {}'.format(rms))
     ridge_preds = np.concatenate([oof_train, oof_test])
-    df['ridge_preds'] = ridge_preds
+    df['description_ridge_preds'] = ridge_preds
     gc.collect()
 
 df.drop(textfeats+["user_id"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
-X = df.iloc[train_index,:].values
-testing = df.iloc[test_index,:].values
+X = df.loc[train_index,:].values
+testing = df.loc[test_index,:].values
 tfvocab = df.columns.tolist()
 
 for shape in [X,testing]:
@@ -416,12 +455,12 @@ lgbm_params =  {
     'objective': 'regression',
     'metric': 'rmse',
     # 'max_depth': 15,
-    'num_leaves':450,
+    'num_leaves':300,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
-    'bagging_freq': 50,
-    'learning_rate': 0.001,
+    'bagging_freq': 100,
+    'learning_rate': 0.01,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
@@ -448,7 +487,7 @@ for train, valid in kf_.split(X):
         model = lgb.train(
             lgbm_params,
             lgbtrain,
-            num_boost_round=2000,
+            num_boost_round=20000,
             valid_sets=[lgbtrain, lgbvalid],
             valid_names=['train','valid'],
             early_stopping_rounds=50,
