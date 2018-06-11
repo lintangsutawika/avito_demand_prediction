@@ -189,17 +189,6 @@ if args.target == "True":
     training, testing = target_encode.encode(training, testing, y)
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        df[col].fillna('Unknown')
-        df[col] = lbl.fit_transform(df[col].astype(str))
-
 if args.cat2vec == 'True':
     from gensim.models import Word2Vec # categorical feature to vectors
 
@@ -224,6 +213,18 @@ if args.mean == "True":
     #     gp = tr.groupby(c)['price']
     #     mean = gp.mean()
     #     data[c + '_price_avg'] = data[c].map(mean)
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        df[col].fillna('Unknown')
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
 
 if args.text == 'True':
     ##############################################################################################################
