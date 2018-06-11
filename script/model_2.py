@@ -225,6 +225,7 @@ if args.categorical == "True":
         df[col] = lbl.fit_transform(df[col].astype(str))
 else:
     df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
 
 if args.text == 'True':
     ##############################################################################################################
