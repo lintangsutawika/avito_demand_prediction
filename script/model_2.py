@@ -381,7 +381,7 @@ if args.wordbatch == 'True':
 
         model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
         model.fit(x_tr, y_tr)
-        oof_train[test_index] = model.predict(x_te)
+        oof_train[test_ind] = model.predict(x_te)
         oof_test_skf[i, :] = model.predict(X_description[ntrain:])
 
     oof_test[:] = oof_test_skf.mean(axis=0)
