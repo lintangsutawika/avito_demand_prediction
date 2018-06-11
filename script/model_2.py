@@ -206,7 +206,8 @@ if args.cat2vec == 'True':
     ##############################################################################################################
     print("Cat2Vec Encoding for Categorical Features")
     ##############################################################################################################
-    cat_cols = ['region', 'city', 'parent_category_name','category_name' 'user_type', 'user_id']
+    # cat_cols = ['region', 'city', 'parent_category_name','category_name' 'user_type', 'user_id']
+    cat_cols = categorical
     def apply_w2v(sentences, model, num_features):
         def _average_word_vectors(words, model, vocabulary, num_features):
             feature_vector = np.zeros((num_features,), dtype="float64")
@@ -252,6 +253,10 @@ if args.mean == "True":
     ##############################################################################################################
     print("Mean Encoding for Categorical Features")
     ############################################################################################################## 
+    df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
+    df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
     df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
     df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
     df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
