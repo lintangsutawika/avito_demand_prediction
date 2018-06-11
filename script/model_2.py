@@ -140,18 +140,28 @@ if args.image_top == 'True':
 
 if args.mean == "True":
     ##############################################################################################################
-    print("Mean Encoding for Categorical Features")
+    print("Statistical Encoding for Categorical Features")
     ############################################################################################################## 
     df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
     df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
+    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('var')
+    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('median')
     df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
+    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('var')
+    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('median')
     df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
     df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
+    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('var')
+    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('median')
     df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
+    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('var')
+    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('median')
     df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
-    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('std')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('var')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('median')
     
 if args.categorical == "True":    
     ##############################################################################################################
@@ -517,6 +527,6 @@ model_prediction = model_prediction/len(models)
 
 model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
 model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
-model_submission.to_csv("submission_dart.csv",index=True,header=True)
+model_submission.to_csv("submission.csv",index=True,header=True)
 # print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
