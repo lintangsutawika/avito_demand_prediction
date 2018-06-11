@@ -275,7 +275,7 @@ if args.cat2vec == 'True':
 
     c2v_model = fit_cat2vec_model()
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
-                        columns=cat_cols, index=df.index)
+                        columns=["cat2vec_"+cat_cols], index=df.index)
     df = pd.concat([df,temp], axis=1)
 
 if args.text == 'True':
