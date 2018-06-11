@@ -281,10 +281,10 @@ for train, valid in kf_.split(X):
             X = X.tocsr()
         lgbtrain = lgb.Dataset(X[train], y[train],
                         feature_name=tfvocab,
-                        categorical_feature = "")
+                        categorical_feature = categorical)
         lgbvalid = lgb.Dataset(X[valid], y[valid],
                         feature_name=tfvocab,
-                        categorical_feature = "")
+                        categorical_feature = categorical)
 
         model = lgb.train(
             lgbm_params,
@@ -301,7 +301,7 @@ for train, valid in kf_.split(X):
         print('Fold {}, RMSE: {}'.format(i,validation_score))
         cv_score += validation_score
         models.append(model)
-        print(model.feature_importance)
+        print(model.feature_importance())
     else:
         break
 
