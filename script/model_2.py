@@ -54,6 +54,7 @@ parser.add_argument('--text', default=False)
 parser.add_argument('--categorical', default=False)
 parser.add_argument('--cat2vec', default=False)
 parser.add_argument('--mean', default=False)
+parser.add_argument('--target', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -70,6 +71,7 @@ print("text: {}".format(args.text))
 print("categorical: {}".format(args.categorical))
 print("cat2vec: {}".format(args.cat2vec))
 print("mean: {}".format(args.mean))
+print("target: {}".format(args.target))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -124,7 +126,7 @@ if args.image_top == 'True':
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
 
-if args.categorical == "True":
+if args.target == "True":
     ##############################################################################################################
     print("Target Encoding for Categorical Features")
     ##############################################################################################################
@@ -186,7 +188,11 @@ if args.categorical == "True":
                                   keep_original=True, cols=f_cats)
     training, testing = target_encode.encode(training, testing, y)
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
-    
+
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
     # print("Start Label Encoding")
     # Encoder:
     lbl = preprocessing.LabelEncoder()
