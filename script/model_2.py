@@ -197,19 +197,20 @@ if args.cat2vec == 'True':
     from gensim.models import Word2Vec # categorical feature to vectors
 
 if args.mean == "True":
-    agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
-            'image_top_1', 'user_type','item_seq_number','day_of_week'];
-    for c in tqdm(agg_cols):
-        gp = 
-        mean = gp.mean()
-        std  = gp.std()
-        data[c + '_deal_probability_avg'] = df[c].map(tr.groupby(['city','category_name'])['deal_probability'].mean())
-        data[c + '_deal_probability_std'] = data[c].map(std)
+    pass
+    # agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
+    #         'image_top_1', 'user_type','item_seq_number','day_of_week'];
+    # for c in tqdm(agg_cols):
+    #     gp = 
+    #     mean = gp.mean()
+    #     std  = gp.std()
+    #     data[c + '_deal_probability_avg'] = df[c].map(tr.groupby(['city','category_name'])['deal_probability'].mean())
+    #     data[c + '_deal_probability_std'] = data[c].map(std)
 
-    for c in tqdm(agg_cols):
-        gp = tr.groupby(c)['price']
-        mean = gp.mean()
-        data[c + '_price_avg'] = data[c].map(mean)
+    # for c in tqdm(agg_cols):
+    #     gp = tr.groupby(c)['price']
+    #     mean = gp.mean()
+    #     data[c + '_price_avg'] = data[c].map(mean)
 
 if args.text == 'True':
     ##############################################################################################################
