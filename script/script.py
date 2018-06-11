@@ -544,5 +544,5 @@ model_prediction = model_prediction/len(models)
 model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
 model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
 model_submission.to_csv("submission_dart.csv",index=True,header=True)
-print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
+# print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
