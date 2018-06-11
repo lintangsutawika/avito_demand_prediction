@@ -53,6 +53,7 @@ parser.add_argument('--agg_feat', default=False)
 parser.add_argument('--text', default=False)
 parser.add_argument('--categorical', default=False)
 parser.add_argument('--cat2vec', default=False)
+parser.add_argument('--mean', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -68,6 +69,7 @@ print("agg_feat: {}".format(args.agg_feat))
 print("text: {}".format(args.text))
 print("categorical: {}".format(args.categorical))
 print("cat2vec: {}".format(args.cat2vec))
+print("mean: {}".format(args.mean))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -190,7 +192,7 @@ if args.categorical == "True":
     for col in categorical:
         df[col].fillna('Unknown')
         df[col] = lbl.fit_transform(df[col].astype(str))
-        
+
 if args.cat2vec == 'True':
     from gensim.models import Word2Vec # categorical feature to vectors
 
