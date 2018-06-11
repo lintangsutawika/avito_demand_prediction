@@ -200,10 +200,10 @@ if args.mean == "True":
     agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
             'image_top_1', 'user_type','item_seq_number','day_of_week'];
     for c in tqdm(agg_cols):
-        gp = tr.groupby(c)['deal_probability']
+        gp = 
         mean = gp.mean()
         std  = gp.std()
-        data[c + '_deal_probability_avg'] = data[c].map(mean)
+        data[c + '_deal_probability_avg'] = df[c].map(tr.groupby(['city','category_name'])['deal_probability'].mean())
         data[c + '_deal_probability_std'] = data[c].map(std)
 
     for c in tqdm(agg_cols):
@@ -313,7 +313,7 @@ for train, valid in kf_.split(X):
         model = lgb.train(
             lgbm_params,
             lgbtrain,
-            num_boost_round=20000,
+            num_boost_round=2000,
             valid_sets=[lgbtrain, lgbvalid],
             valid_names=['train','valid'],
             early_stopping_rounds=50,
