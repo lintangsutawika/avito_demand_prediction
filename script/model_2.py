@@ -361,7 +361,7 @@ if args.wordbatch == 'True':
     gc.collect()
     mask = np.where(X_description.getnnz(axis=0) > 8)[0]
     X_description = X_description[:, mask]
-    print(X_description_train.shape)
+    print(X_description.shape)
 
     from sklearn.metrics import mean_squared_error
     from math import sqrt
