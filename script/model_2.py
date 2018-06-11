@@ -138,6 +138,35 @@ if args.image_top == 'True':
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
 
+if args.mean == "True":
+    ##############################################################################################################
+    print("Mean Encoding for Categorical Features")
+    ############################################################################################################## 
+    df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
+    df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
+    df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
+    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
+    df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
+    df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
+    
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        df[col].fillna('Unknown')
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
+
 if args.target == "True":
     ##############################################################################################################
     print("Target Encoding for Categorical Features")
@@ -248,35 +277,6 @@ if args.cat2vec == 'True':
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
                         columns=cat_cols, index=df.index)
     df = pd.concat([df,temp], axis=1)
-
-if args.mean == "True":
-    ##############################################################################################################
-    print("Mean Encoding for Categorical Features")
-    ############################################################################################################## 
-    df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
-    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
-    df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
-    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
-    df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
-    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
-    df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
-    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
-    df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
-    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
-    
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        df[col].fillna('Unknown')
-        df[col] = lbl.fit_transform(df[col].astype(str))
-else:
-    df.drop(categorical,axis=1, inplace=True)
-    categorical = ""
 
 if args.text == 'True':
     ##############################################################################################################
