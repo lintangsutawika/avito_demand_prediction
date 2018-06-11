@@ -18,6 +18,12 @@ import wordbatch
 from wordbatch.extractors import WordBag
 from wordbatch.models import FM_FTRL
 
+# Cat2Vec
+import copy
+import gensim
+from random import shuffle
+from gensim.models import Word2Vec # categorical feature to vectors
+
 # Models Packages
 from sklearn import metrics
 from sklearn.metrics import mean_squared_error
@@ -195,29 +201,59 @@ if args.target == "True":
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
 if args.cat2vec == 'True':
-    from gensim.models import Word2Vec # categorical feature to vectors
+    cat_cols = ['region', 'city', 'parent_category_name','category_name' 'user_type', 'user_id']
+    def apply_w2v(sentences, model, num_features):
+        def _average_word_vectors(words, model, vocabulary, num_features):
+            feature_vector = np.zeros((num_features,), dtype="float64")
+            n_words = 0.
+            for word in words:
+                if word in vocabulary: 
+                    n_words = n_words + 1.
+                    feature_vector = np.add(feature_vector, model[word])
+
+            if n_words:
+                feature_vector = np.divide(feature_vector, n_words)
+            return feature_vector
+        
+        vocab = set(model.wv.index2word)
+        feats = [_average_word_vectors(s, model, vocab, num_features) for s in sentences]
+        return np.array(feats)
+
+    def gen_cat2vec_sentences(data):
+        X_w2v = copy.deepcopy(data)
+        names = list(X_w2v.columns.values)
+        for c in names:
+            X_w2v[c] = X_w2v[c].fillna('unknow').astype('category')
+            X_w2v[c].cat.categories = ["%s %s" % (c,g) for g in X_w2v[c].cat.categories]
+        X_w2v = X_w2v.values.tolist()
+        return X_w2v
+
+    def fit_cat2vec_model():
+        X_w2v = gen_cat2vec_sentences(df.loc[:,cat_cols].sample(frac=0.6))
+        for i in X_w2v:
+            shuffle(i)
+        model = Word2Vec(X_w2v, size=n_cat2vec_feature, window=n_cat2vec_window)
+        return model
+
+    n_cat2vec_feature  = len(cat_cols) # define the cat2vecs dimentions
+    n_cat2vec_window   = len(cat_cols) * 2 # define the w2v window size
+
+    c2v_model = fit_cat2vec_model()
+    temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
+                        columns=['cat2vec_0', 'cat2vec_1', 'cat2vec_2', 'cat2vec_3', 'cat2vec_4'], index=df.index)
+    df = pd.concat([df,temp], axis=1)
 
 if args.mean == "True":
-    pass
+    ##############################################################################################################
+    print("Mean Encoding for Categorical Features")
+    ##############################################################################################################    pass
     df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
     df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
     df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
     df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
     df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
-    # agg_cols = ['region', 'city', 'parent_category_name', 'category_name',
-    #         'image_top_1', 'user_type','item_seq_number','day_of_week'];
-    # for c in tqdm(agg_cols):
-    #     gp = 
-    #     mean = gp.mean()
-    #     std  = gp.std()
-    #     data[c + '_deal_probability_avg'] = df[c].map(tr.groupby(['city','category_name'])['deal_probability'].mean())
-    #     data[c + '_deal_probability_std'] = data[c].map(std)
-
-    # for c in tqdm(agg_cols):
-    #     gp = tr.groupby(c)['price']
-    #     mean = gp.mean()
-    #     data[c + '_price_avg'] = data[c].map(mean)
+    
 if args.categorical == "True":    
     ##############################################################################################################
     print("Regular Encoding for Categorical Features")
@@ -278,9 +314,9 @@ if args.text == 'True':
         df[cols + '_emoji_vs_char'] = df[cols + '_num_emoji'] / df[cols + '_num_char'] * 100
         df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
 
-if args.text == 'True':
+if args.wordbatch == 'True':
     ##############################################################################################################
-    print("Text Features")
+    print("WordBatch Features")
     ##############################################################################################################
     def cleanName(text):
         try:
@@ -302,8 +338,40 @@ if args.text == 'True':
                                                                   "idf": None}), procs=8)
     wb.dictionary_freeze = True
     X_description = wb.fit_transform(df['description'].fillna(''))
-    print(X_description_train.shape)
     del(wb)
+    gc.collect()
+    mask = np.where(X_description.getnnz(axis=0) > 8)[0]
+    X_description = X_description[:, mask]
+    print(X_description_train.shape)
+
+    from sklearn.metrics import mean_squared_error
+    from math import sqrt
+
+    kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
+
+
+    oof_train = np.zeros((ntrain,))
+    oof_test = np.zeros((ntest,))
+    oof_test_skf = np.empty((NFOLDS, ntest))
+
+    for i, (train_index, test_index) in enumerate(kf):
+        print('Ridge Regression, Fold {}'.format(i))
+        x_tr = X_description_train[:ntrain][train_index]
+        y_tr = y[train_index]
+        x_te = X_description_train[:ntrain][test_index]
+
+        model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
+        model.fit(x_tr, y_tr)
+        oof_train[test_index] = model.predict(x_te)
+        oof_test_skf[i, :] = model.predict(X_description_train[ntrain:])
+
+    oof_test[:] = oof_test_skf.mean(axis=0)
+    oof_train = oof_train.reshape(-1, 1)
+    oof_test = oof_test.reshape(-1, 1)
+    rms = sqrt(mean_squared_error(y, oof_train))
+    print('Ridge OOF RMSE: {}'.format(rms))
+    ridge_preds = np.concatenate([oof_train, oof_test])
+    df['ridge_preds'] = ridge_preds
     gc.collect()
 
 
