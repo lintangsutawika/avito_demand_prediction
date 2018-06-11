@@ -510,6 +510,7 @@ for train, valid in kf_.split(X):
         cv_score += validation_score
         models.append(model)
         feature = pd.DataFrame(data={'feature':model.feature_name(),'importance':model.feature_importance()})
+        print(feature.sort_values('importance'))
     else:
         break
 
