@@ -373,11 +373,11 @@ if args.wordbatch == 'True':
     oof_test = np.zeros((ntest,))
     oof_test_skf = np.empty((NFOLDS, ntest))
 
-    for i, (train_index, test_index) in enumerate(kf):
+    for i, (train_ind, test_ind) in enumerate(kf):
         print('Ridge Regression, Fold {}'.format(i))
-        x_tr = X_description[:ntrain][train_index]
-        y_tr = y[train_index]
-        x_te = X_description[:ntrain][test_index]
+        x_tr = X_description[:ntrain][train_ind]
+        y_tr = y[train_ind]
+        x_te = X_description[:ntrain][test_ind]
 
         model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
         model.fit(x_tr, y_tr)
@@ -397,13 +397,13 @@ df.drop(textfeats+["user_id"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
-X = df.loc[train_index,:].values
-testing = df.loc[test_index,:].values
+X = df.iloc[train_index,:].values
+testing = df.iloc[test_index,:].values
 tfvocab = df.columns.tolist()
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
-print("Feature Names Length: ".format(len(tfvocab)))
+print("Feature Names Length: {}".format(len(tfvocab)))
 
 ##############################################################################################################
 print("Modeling Stage")
