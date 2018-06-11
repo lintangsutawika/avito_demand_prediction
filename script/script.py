@@ -377,12 +377,12 @@ if args.tfidf == "True":
     vectorizer.fit(df.to_dict('records'))
 
     ready_df = vectorizer.transform(df.to_dict('records'))
-    n_comp = 1000
-    svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
-    svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
-    svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
-    svd_comp.set_index(df.index, inplace=True)
-    df = pd.concat([df, svd_comp], axis=1)
+    # n_comp = 1000
+    # svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
+    # svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
+    # svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
+    # svd_comp.set_index(df.index, inplace=True)
+    # df = pd.concat([df, svd_comp], axis=1)
 
     print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
     # tfvocab = vectorizer.get_feature_names()
@@ -450,17 +450,14 @@ if args.ridge == "True":
 ##############################################################################################################
 print("Combine Dense Features with Sparse Text Bag of Words Features")
 ##############################################################################################################
-# if args.tfidf == "True":
-#     X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
-#     testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
-#     tfvocab = df.columns.tolist() + tfvocab
-# else:
-#     X = df.loc[train_index,:].values
-#     testing = df.loc[test_index,:].values
-#     tfvocab = df.columns.tolist()
-X = df.loc[train_index,:].values
-testing = df.loc[test_index,:].values
-tfvocab = df.columns.tolist()
+if args.tfidf == "True":
+    X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
+    testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
+    tfvocab = df.columns.tolist() + tfvocab
+else:
+    X = df.loc[train_index,:].values
+    testing = df.loc[test_index,:].values
+    tfvocab = df.columns.tolist()
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
