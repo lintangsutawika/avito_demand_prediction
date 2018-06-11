@@ -375,14 +375,14 @@ if args.wordbatch == 'True':
 
     for i, (train_index, test_index) in enumerate(kf):
         print('Ridge Regression, Fold {}'.format(i))
-        x_tr = X_description_train[:ntrain][train_index]
+        x_tr = X_description[:ntrain][train_index]
         y_tr = y[train_index]
-        x_te = X_description_train[:ntrain][test_index]
+        x_te = X_description[:ntrain][test_index]
 
         model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
         model.fit(x_tr, y_tr)
         oof_train[test_index] = model.predict(x_te)
-        oof_test_skf[i, :] = model.predict(X_description_train[ntrain:])
+        oof_test_skf[i, :] = model.predict(X_description[ntrain:])
 
     oof_test[:] = oof_test_skf.mean(axis=0)
     oof_train = oof_train.reshape(-1, 1)
