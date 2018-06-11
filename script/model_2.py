@@ -64,6 +64,7 @@ parser.add_argument('--categorical', default=False)
 parser.add_argument('--cat2vec', default=False)
 parser.add_argument('--mean', default=False)
 parser.add_argument('--target', default=False)
+parser.add_argument('--wordbatch', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -81,6 +82,7 @@ print("categorical: {}".format(args.categorical))
 print("cat2vec: {}".format(args.cat2vec))
 print("mean: {}".format(args.mean))
 print("target: {}".format(args.target))
+print("wordbatch: {}".format(args.wordbatch))
 
 ##############################################################################################################
 print("Data Load Stage")
