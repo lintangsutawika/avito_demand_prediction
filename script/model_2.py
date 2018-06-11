@@ -108,7 +108,7 @@ df["image_top_1"].fillna(-999,inplace=True)
 df["day_of_week"] = df['activation_date'].dt.weekday
 
 textfeats = ["description", "title"]
-categorical = ["user_id","region","city","parent_category_name","category_name",
+categorical = ["region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
@@ -328,6 +328,15 @@ if args.wordbatch == 'True':
     ##############################################################################################################
     print("WordBatch Features")
     ##############################################################################################################
+    stopwords = {x: 1 for x in stopwords.words('russian')}
+    
+    def normalize_text(text):
+        text = text.lower().strip()
+        for s in string.punctuation:
+            text = text.replace(s, ' ')
+        text = text.strip().split(' ')
+        return u' '.join(x for x in text if len(x) > 1 and x not in stopwords)
+
     def cleanName(text):
         try:
             textProc = text.lower()
@@ -384,8 +393,7 @@ if args.wordbatch == 'True':
     df['ridge_preds'] = ridge_preds
     gc.collect()
 
-
-df.drop(textfeats,axis=1, inplace=True)
+df.drop(textfeats+"user_id",axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
