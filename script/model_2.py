@@ -93,6 +93,7 @@ df["image_top_1"].fillna(-999,inplace=True)
 # df["day_of_month"] = df['activation_date'].dt.day
 df["day_of_week"] = df['activation_date'].dt.weekday
 
+textfeats = ["description", "title"]
 categorical = ["user_id","region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
 
@@ -234,7 +235,6 @@ if args.text == 'True':
         except:
             return "name error"
 
-    textfeats = ["description", "title"]
     # df['title'] = df['title'].apply(lambda x: cleanName(x))
     # df["description"]   = df["description"].apply(lambda x: cleanName(x))
     df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
