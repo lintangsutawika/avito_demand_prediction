@@ -377,7 +377,7 @@ if args.tfidf == "True":
     vectorizer.fit(df.to_dict('records'))
 
     ready_df = vectorizer.transform(df.to_dict('records'))
-    n_comp = 100
+    n_comp = 10000
     svd_obj = TruncatedSVD(n_components=n_comp, algorithm='randomized')
     svd_comp = pd.DataFrame(svd_obj.fit_transform(ready_df))
     svd_comp.columns = ['svd_{}'.format(str(i)) for i in range(n_comp)]
