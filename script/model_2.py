@@ -425,8 +425,8 @@ if args.wordbatch == 'True':
     X_title = wb.fit_transform(df['title'].fillna(''))
     del(wb)
     gc.collect()
-    mask = np.where(X_title.getnnz(axis=0) > 3)[0]
-    X_title = X_title[:, mask]
+    # mask = np.where(X_title.getnnz(axis=0) > 3)[0]
+    # X_title = X_title[:, mask]
     print(X_title.shape)
 
     oof_train = np.zeros((ntrain,))
@@ -463,8 +463,8 @@ if args.wordbatch == 'True':
     X_description = wb.fit_transform(df['description'].fillna(''))
     del(wb)
     gc.collect()
-    mask = np.where(X_description.getnnz(axis=0) > 8)[0]
-    X_description = X_description[:, mask]
+    # mask = np.where(X_description.getnnz(axis=0) > 8)[0]
+    # X_description = X_description[:, mask]
     print(X_description.shape)
 
     oof_train = np.zeros((ntrain,))
