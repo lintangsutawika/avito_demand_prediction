@@ -65,6 +65,7 @@ parser.add_argument('--cat2vec', default=False)
 parser.add_argument('--mean', default=False)
 parser.add_argument('--target', default=False)
 parser.add_argument('--wordbatch', default=False)
+parser.add_argument('--image', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -83,6 +84,7 @@ print("cat2vec: {}".format(args.cat2vec))
 print("mean: {}".format(args.mean))
 print("target: {}".format(args.target))
 print("wordbatch: {}".format(args.wordbatch))
+print("image: {}".format(args.image))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -100,9 +102,9 @@ print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
 print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
 
-df["price"] = np.log1p(df["price"])
+# df["price"] = np.log1p(df["price"])
 df["price"].fillna(-1, inplace=True)
-df["image_top_1"].fillna(-999,inplace=True)
+# df["image_top_1"].fillna(-999,inplace=True)
 # df["week_of_year"] = df['activation_date'].dt.week
 # df["day_of_month"] = df['activation_date'].dt.day
 df["day_of_week"] = df['activation_date'].dt.weekday
@@ -112,6 +114,16 @@ categorical = ["region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
 
 df.drop(["activation_date","image"],axis=1,inplace=True)
+
+if args.image == 'True':
+    ##############################################################################################################
+    print("Image Confidence")
+    ##############################################################################################################
+    image_confidence_train = pd.read_csv("../input/image-confidence/image_confidence_train.csv")
+    image_confidence_test = pd.read_csv("../input/image-confidence/image_confidence_test.csv")
+    df = df.merge(image_confidence_train, on='image', how='left')
+    df = df.merge(image_confidence_test, on='image', how='left')
+    df['image_confidence'].fillna(-1, inplace=True)
 
 # Aggregated Features
 # https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
