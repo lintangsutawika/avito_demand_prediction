@@ -113,7 +113,7 @@ textfeats = ["description", "title"]
 categorical = ["region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
 
-df.drop(["activation_date","image"],axis=1,inplace=True)
+df.drop(["activation_date"],axis=1,inplace=True)
 
 if args.image == 'True':
     ##############################################################################################################
@@ -124,6 +124,8 @@ if args.image == 'True':
     image_confidence = pd.concat([image_confidence_train,image_confidence_test],axis=0)
     df = df.merge(image_confidence, on='image', how='left')
     df['image_confidence'].fillna(-1, inplace=True)
+
+df.drop(["image"],axis=1,inplace=True)
 
 # Aggregated Features
 # https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
