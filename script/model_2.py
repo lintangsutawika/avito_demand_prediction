@@ -151,6 +151,7 @@ if args.image_top == 'True':
     ##############################################################################################################
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
+    df.drop(['image_top_1'], axis=1, inplace=True)
     df = pd.concat([df,pd.concat([training['image_top_1'],testing['image_top_1']],axis=0)], axis=1)
 
 if args.mean == "True":
