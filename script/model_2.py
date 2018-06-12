@@ -121,8 +121,8 @@ if args.image == 'True':
     ##############################################################################################################
     image_confidence_train = pd.read_csv("../input/image-confidence/image_confidence_train.csv")
     image_confidence_test = pd.read_csv("../input/image-confidence/image_confidence_test.csv")
-    df = df.merge(image_confidence_train, on='image', how='left')
-    df = df.merge(image_confidence_test, on='image', how='left')
+    image_confidence = pd.concat([image_confidence_train,image_confidence_test],axis=0)
+    df = df.merge(image_confidence, on='image', how='left')
     df['image_confidence'].fillna(-1, inplace=True)
 
 # Aggregated Features
@@ -149,6 +149,7 @@ if args.image_top == 'True':
     ##############################################################################################################
     training['image_top_1'] = pd.read_csv("../input/text2image-top-1/train_image_top_1_features.csv", index_col= "item_id")
     testing['image_top_1'] = pd.read_csv("../input/text2image-top-1/test_image_top_1_features.csv", index_col= "item_id")
+    df = pd.concat([df,pd.concat([training['image_top_1'],testing['image_top_1']],axis=0)], axis=1)
 
 if args.mean == "True":
     ##############################################################################################################
