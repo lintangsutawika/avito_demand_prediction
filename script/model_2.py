@@ -66,6 +66,7 @@ parser.add_argument('--mean', default=False)
 parser.add_argument('--target', default=False)
 parser.add_argument('--wordbatch', default=False)
 parser.add_argument('--image', default=False)
+parser.add_argument('--sparse', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -85,6 +86,7 @@ print("mean: {}".format(args.mean))
 print("target: {}".format(args.target))
 print("wordbatch: {}".format(args.wordbatch))
 print("image: {}".format(args.image))
+print("sparse: {}".format(args.sparse))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -366,6 +368,8 @@ if args.wordbatch == 'True':
     from math import sqrt
 
     kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
+    stemmer = SnowballStemmer("russian") 
+    tokenizer = toktok.ToktokTokenizer()
     stopwords = {x: 1 for x in stopwords.words('russian')}
     
     def normalize_text(text):
@@ -381,13 +385,35 @@ if args.wordbatch == 'True':
             # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
             #regex = re.compile(u'[^[:alpha:]]')
             #textProc = regex.sub(" ", textProc)
+            textProc.sub(r"((\d+)[.,\-:]{0,}(\d+))","N",textProc)
             textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
             textProc = " ".join(textProc.split())
             return textProc
         except:
             return "name error"
 
+    def stemRussian(word, stemmer):
+        try:
+            word.encode(encoding='utf-8').decode('ascii')
+            return word
+        except:
+            return stemmer.stem(word)
+
     df["title"] = df["title"].apply(lambda x: cleanName(x))
+    df["description"] = df["description"].apply(lambda x: cleanName(x))
+
+    tqdm.pandas()
+    if "stemmed_description.csv" not in os.listdir("."):
+        df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+        df['description'].to_csv("stemmed_description.csv", index=True, header='description')
+        df['title'] = df['title'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+        df['title'].to_csv("stemmed_title.csv", index=True, header='title')
+    else:
+        stemmed_description = pd.read_csv("stemmed_description.csv")
+        stemmed_title = pd.read_csv("stemmed_title.csv")
+        df = pd.concat([df,stemmed_description], axis=1)
+        df = pd.concat([df,stemmed_title], axis=1)
+
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.5, 1.0],
                                                                   "hash_size": 2 ** 29,
@@ -427,7 +453,6 @@ if args.wordbatch == 'True':
     df['title_ridge_preds'] = ridge_preds
     gc.collect()
 
-    df["description"] = df["description"].apply(lambda x: cleanName(x))
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.0, 1.0],
                                                                   "hash_size": 2 ** 28,
