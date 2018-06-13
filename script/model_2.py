@@ -445,7 +445,7 @@ if args.wordbatch == 'True':
         for i, (train_ind, test_ind) in enumerate(kf):
             print('Ridge Regression, Fold {}'.format(i))
             x_tr = X_train[train_ind]
-            y_tr = y_train
+            y_tr = y_train[train_ind]
             x_te = X_train[test_ind]
 
             model = Ridge(solver=solver_alg, fit_intercept=True, random_state=205, alpha=3.3)
