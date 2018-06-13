@@ -447,8 +447,11 @@ if args.wordbatch == 'True':
             x_tr = X_train[train_ind]
             y_tr = y_train[train_ind]
             x_te = X_train[test_ind]
-
-            model = Ridge(solver=solver_alg, fit_intercept=True, random_state=205, alpha=3.3)
+            if solver_alg == "sag":
+                intercept = True
+            else:
+                intercept = False
+            model = Ridge(solver=solver_alg, fit_intercept=intercept, random_state=205, alpha=3.3)
             model.fit(x_tr, y_tr)
             oof_train[test_ind] = model.predict(x_te)
             oof_test_skf[i, :] = model.predict(X_test)
@@ -492,36 +495,19 @@ if args.wordbatch == 'True':
     X_title = X_title[:, mask]
     print(X_title.shape)
 
-    oof_train = np.zeros((ntrain,))
-    oof_test = np.zeros((ntest,))
-    oof_test_skf = np.empty((NFOLDS, ntest))
-
-    for i, (train_ind, test_ind) in enumerate(kf):
-        print('Ridge Regression, Fold {}'.format(i))
-        x_tr = X_title[:ntrain][train_ind]
-        y_tr = y[train_ind]
-        x_te = X_title[:ntrain][test_ind]
-
-        model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
-        model.fit(x_tr, y_tr)
-        oof_train[test_ind] = model.predict(x_te)
-        oof_test_skf[i, :] = model.predict(X_title[ntrain:])
-
-    oof_test[:] = oof_test_skf.mean(axis=0)
-    oof_train = oof_train.reshape(-1, 1)
-    oof_test = oof_test.reshape(-1, 1)
-    rms = sqrt(mean_squared_error(y, oof_train))
-    print('Ridge OOF RMSE: {}'.format(rms))
-    ridge_preds = np.concatenate([oof_train, oof_test])
-    df['title_ridge_preds'] = ridge_preds
-    gc.collect()
+    df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag"),gc.collect()
+    df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga"),gc.collect()
+    df['title_ridge_preds_cholesky'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "cholesky"),gc.collect()
+    df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr"),gc.collect()
+    df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg"),gc.collect()
 
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.0, 1.0],
                                                                   "hash_size": 2 ** 28,
                                                                   "norm": "l2",
                                                                   "tf": 1.0,
-                                                                  "idf": None}), procs=8)
+                                                                  "idf": None
+                                                                  }), procs=8)
     wb.dictionary_freeze = True
     X_description = wb.fit_transform(df['description'].fillna(''))
     del(wb)
@@ -530,35 +516,11 @@ if args.wordbatch == 'True':
     X_description = X_description[:, mask]
     print(X_description.shape)
 
-    # oof_train = np.zeros((ntrain,))
-    # oof_test = np.zeros((ntest,))
-    # oof_test_skf = np.empty((NFOLDS, ntest))
-
-    # for i, (train_ind, test_ind) in enumerate(kf):
-    #     print('Ridge Regression, Fold {}'.format(i))
-    #     x_tr = X_description[:ntrain][train_ind]
-    #     y_tr = y[train_ind]
-    #     x_te = X_description[:ntrain][test_ind]
-
-    #     model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
-    #     model.fit(x_tr, y_tr)
-    #     oof_train[test_ind] = model.predict(x_te)
-    #     oof_test_skf[i, :] = model.predict(X_description[ntrain:])
-
-    # oof_test[:] = oof_test_skf.mean(axis=0)
-    # oof_train = oof_train.reshape(-1, 1)
-    # oof_test = oof_test.reshape(-1, 1)
-    # rms = sqrt(mean_squared_error(y, oof_train))
-    # print('Ridge OOF RMSE: {}'.format(rms))
-    # df['description_ridge_preds_sag'] = np.concatenate([oof_train, oof_test])
-
-    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag")
-    df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga")
-    df['description_ridge_preds_svd'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "svd")
-    df['description_ridge_preds_cholesky'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "cholesky")
-    df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr")
-    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg")
-    gc.collect()
+    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag"),gc.collect()
+    df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga"),gc.collect()
+    df['description_ridge_preds_cholesky'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "cholesky"),gc.collect()
+    df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr"),gc.collect()
+    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg"),gc.collect()
 
 ##############################################################################################################
 print("Build Dataset")
@@ -567,9 +529,14 @@ df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
-X = df.loc[train_index,:].values
-testing = df.loc[test_index,:].values
-tfvocab = df.columns.tolist()
+if args.sparse == "True":
+    X = hstack([csr_matrix(df.loc[train_index,:].values),X_description[0:train_index.shape[0]]]) # Sparse Matrix
+    testing = hstack([csr_matrix(df.loc[test_index,:].values),X_description[train_index.shape[0]:]])
+    tfvocab = df.columns.tolist() + tfvocab
+else:
+    X = df.loc[train_index,:].values
+    testing = df.loc[test_index,:].values
+    tfvocab = df.columns.tolist()
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
