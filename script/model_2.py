@@ -356,10 +356,7 @@ if args.wordbatch == 'True':
     from math import sqrt
 
     kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
-    stemmer = SnowballStemmer("russian") 
-    tokenizer = toktok.ToktokTokenizer()
-    stopwords = {x: 1 for x in stopwords.words('russian')}
-    
+
     def normalize_text(text):
         text = text.lower().strip()
         for s in string.punctuation:
@@ -387,11 +384,14 @@ if args.wordbatch == 'True':
         except:
             return stemmer.stem(word)
 
-    df["title"] = df["title"].apply(lambda x: cleanName(x))
-    df["description"] = df["description"].apply(lambda x: cleanName(x))
-
     tqdm.pandas()
     if "stemmed_description.csv" not in os.listdir("."):
+        stemmer = SnowballStemmer("russian") 
+        tokenizer = toktok.ToktokTokenizer()
+        stopwords = {x: 1 for x in stopwords.words('russian')}
+    
+        df["title"] = df["title"].apply(lambda x: cleanName(x)) 
+        df["description"] = df["description"].apply(lambda x: cleanName(x))
         df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
         df['description'].to_csv("stemmed_description.csv", index=True, header='description')
         df['title'] = df['title'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
@@ -409,7 +409,7 @@ if args.wordbatch == 'True':
                                                                   "norm": None,
                                                                   "tf": 'binary',
                                                                   "idf": None,
-                                                                  }), procs=8)
+                                                                  }), procs=16)
     wb.dictionary_freeze = True
     X_title = wb.fit_transform(df['title'].fillna(''))
     del(wb)
@@ -447,7 +447,7 @@ if args.wordbatch == 'True':
                                                                   "hash_size": 2 ** 28,
                                                                   "norm": "l2",
                                                                   "tf": 1.0,
-                                                                  "idf": None}), procs=8)
+                                                                  "idf": None}), procs=16)
     wb.dictionary_freeze = True
     X_description = wb.fit_transform(df['description'].fillna(''))
     del(wb)
@@ -499,7 +499,7 @@ print("Modeling Stage")
 print("Light Gradient Boosting Regressor")
 lgbm_params =  {
     'task': 'train',
-    'boosting_type': 'gbdt',
+    'boosting_type': 'dart',
     'objective': 'regression',
     'metric': 'rmse',
     # 'max_depth': 15,
