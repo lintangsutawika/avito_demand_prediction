@@ -341,7 +341,7 @@ if args.text == 'True':
                 if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
                     continue
                 emoji.add(c)
-        # df[cols] = df[cols].astype(str)
+        df[cols] = df[cols].astype(str)
         # df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
         df[cols + '_num_capital'] = df[cols].apply(lambda x: sum(c.isupper() for c in x))
         df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
