@@ -189,6 +189,11 @@ if args.deal == 'True':
     df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
 
+    df['avg_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('mean'))
+    df['std_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('std'))
+    df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+
     bins = np.linspace(min(df.item_seq_number.values)-1,max(df.item_seq_number.values),int(max(df.item_seq_number.values)/500)).astype(int)
     bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
     df['item_bin'] = pd.cut(df.item_seq_number,bins, labels=bin_label).astype('category')
@@ -196,6 +201,7 @@ if args.deal == 'True':
     df['std_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['std'])
     df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
+
     categorical = categorical + ['item_bin']
    
 if args.categorical == "True":    
@@ -364,6 +370,10 @@ if args.mean == "True":
     ##############################################################################################################
     print("Statistical Encoding for Categorical Features")
     ############################################################################################################## 
+    df['avg_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('mean')
+    df['std_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('std')
+    df['var_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('var')
+    df['med_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('median')
     df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
     df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
     df['var_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('var')
@@ -376,6 +386,14 @@ if args.mean == "True":
     df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
     df['var_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('var')
     df['med_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('median')
+    df['avg_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('mean')
+    df['std_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('std')
+    df['var_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('var')
+    df['med_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('median')
+    df['avg_price_by_city'] = df.groupby(['city'])['price'].transform('mean')
+    df['std_price_by_city'] = df.groupby(['city'])['price'].transform('std')
+    df['var_price_by_city'] = df.groupby(['city'])['price'].transform('var')
+    df['med_price_by_city'] = df.groupby(['city'])['price'].transform('median')
     df['avg_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('mean')
     df['std_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('std')
     df['var_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('var')
@@ -451,7 +469,7 @@ if args.wordbatch == 'True':
                 intercept = True
             else:
                 intercept = False
-            model = Ridge(solver=solver_alg, fit_intercept=intercept, random_state=205, alpha=3.3)
+            model = Ridge(solver=solver_alg, fit_intercept=intercept, random_state=205, alpha=3.3, copy_X=True)
             model.fit(x_tr, y_tr)
             oof_train[test_ind] = model.predict(x_te)
             oof_test_skf[i, :] = model.predict(X_test)
