@@ -189,10 +189,10 @@ if args.deal == 'True':
     df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
 
-    df['avg_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('mean'))
-    df['std_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('std'))
-    df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    # df['avg_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('mean'))
+    # df['std_deal_by_parent_category_name_user_type'] = df['item_seq_number'].map(df_train.groupby(['parent_category_name','user_type'])['deal_probability'].transform('std'))
+    # df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    # df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
 
     bins = np.linspace(min(df.item_seq_number.values)-1,max(df.item_seq_number.values),int(max(df.item_seq_number.values)/500)).astype(int)
     bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
