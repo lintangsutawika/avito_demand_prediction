@@ -391,16 +391,16 @@ if args.wordbatch == 'True':
     df["description"] = df["description"].apply(lambda x: cleanName(x))
 
     tqdm.pandas()
-    if "stemmed_description.csv" not in os.listdir("."):
-        df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
-        df['description'].to_csv("stemmed_description.csv", index=True, header='description')
-        df['title'] = df['title'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
-        df['title'].to_csv("stemmed_title.csv", index=True, header='title')
-    else:
-        stemmed_description = pd.read_csv("stemmed_description.csv")
-        stemmed_title = pd.read_csv("stemmed_title.csv")
-        df = pd.concat([df,stemmed_description], axis=1)
-        df = pd.concat([df,stemmed_title], axis=1)
+    # if "stemmed_description.csv" not in os.listdir("."):
+    df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+    df['description'].to_csv("stemmed_description.csv", index=True, header='description')
+    df['title'] = df['title'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+    df['title'].to_csv("stemmed_title.csv", index=True, header='title')
+    # else:
+    #     stemmed_description = pd.read_csv("stemmed_description.csv")
+    #     stemmed_title = pd.read_csv("stemmed_title.csv")
+    #     df = pd.concat([df,stemmed_description], axis=1)
+    #     df = pd.concat([df,stemmed_title], axis=1)
 
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.5, 1.0],
