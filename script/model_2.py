@@ -342,7 +342,7 @@ if args.text == 'True':
                     continue
                 emoji.add(c)
         df[cols] = df[cols].astype(str)
-        # df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
+        df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
         df[cols + '_num_capital'] = df[cols].apply(lambda x: sum(c.isupper() for c in x))
         df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
         df[cols + '_num_char'] = df[cols].apply(lambda x: len(str(x)))
@@ -409,13 +409,13 @@ if args.wordbatch == 'True':
     from math import sqrt
 
     kf = KFold(ntrain, n_folds=NFOLDS, shuffle=True, random_state=SEED)
-
+    russian_stopwords = {x: 1 for x in stopwords.words('russian')}
     def normalize_text(text):
         text = text.lower().strip()
         for s in string.punctuation:
             text = text.replace(s, ' ')
         text = text.strip().split(' ')
-        return u' '.join(x for x in text if len(x) > 1 and x not in stopwords)
+        return u' '.join(x for x in text if len(x) > 1 and x not in russian_stopwords)
 
     def cleanName(text):
         try:
@@ -441,8 +441,6 @@ if args.wordbatch == 'True':
     if "stemmed_description.csv" not in os.listdir("."):
         stemmer = SnowballStemmer("russian") 
         tokenizer = toktok.ToktokTokenizer()
-        stopwords = {x: 1 for x in stopwords.words('russian')}
-    
         df["title"] = df["title"].apply(lambda x: cleanName(x)) 
         df["description"] = df["description"].apply(lambda x: cleanName(x))
         df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
