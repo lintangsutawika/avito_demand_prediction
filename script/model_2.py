@@ -194,48 +194,7 @@ if args.deal == 'True':
     df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     categorical = categorical + ['item_bin']
-
-if args.mean == "True":
-    ##############################################################################################################
-    print("Statistical Encoding for Categorical Features")
-    ############################################################################################################## 
-    df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
-    df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
-    df['var_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('var')
-    df['med_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('median')
-    df['avg_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('mean')
-    df['std_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('std')
-    df['var_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('var')
-    df['med_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('median')
-    df['avg_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('mean')
-    df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
-    df['var_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('var')
-    df['med_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('median')
-    df['avg_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('mean')
-    df['std_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('std')
-    df['var_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('var')
-    df['med_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('median')
-    df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
-    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
-    df['var_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('var')
-    df['med_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('median')
-    df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
-    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
-    df['var_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('var')
-    df['med_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('median')
-    df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
-    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
-    df['var_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('var')
-    df['med_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('median')
-    df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
-    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
-    df['var_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('var')
-    df['med_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('median')
-    df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
-    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('std')
-    df['var_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('var')
-    df['med_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('median')
-    
+   
 if args.categorical == "True":    
     ##############################################################################################################
     print("Regular Encoding for Categorical Features")
@@ -394,6 +353,47 @@ if args.text == 'True':
         df[cols + '_punctuations_vs_char'] = df[cols + '_num_punctuations'] / df[cols + '_num_char'] * 100
         df[cols + '_emoji_vs_char'] = df[cols + '_num_emoji'] / df[cols + '_num_char'] * 100
         df[cols + '_words_vs_unique'] = df[cols+'_num_unique_words'] / df[cols+'_num_words'] * 100 # Count Unique Words
+
+if args.mean == "True":
+    ##############################################################################################################
+    print("Statistical Encoding for Categorical Features")
+    ############################################################################################################## 
+    df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
+    df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
+    df['var_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('var')
+    df['med_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('median')
+    df['avg_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('mean')
+    df['std_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('std')
+    df['var_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('var')
+    df['med_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('median')
+    df['avg_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('mean')
+    df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
+    df['var_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('var')
+    df['med_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('median')
+    df['avg_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('mean')
+    df['std_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('std')
+    df['var_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('var')
+    df['med_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('median')
+    df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
+    df['var_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('var')
+    df['med_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('median')
+    df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
+    df['var_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('var')
+    df['med_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('median')
+    df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
+    df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
+    df['var_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('var')
+    df['med_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('median')
+    df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
+    df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
+    df['var_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('var')
+    df['med_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('median')
+    df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
+    df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('std')
+    df['var_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('var')
+    df['med_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('median')
 
 if args.wordbatch == 'True':
     ##############################################################################################################
