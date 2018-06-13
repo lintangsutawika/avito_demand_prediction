@@ -409,7 +409,7 @@ if args.wordbatch == 'True':
                                                                   "norm": None,
                                                                   "tf": 'binary',
                                                                   "idf": None,
-                                                                  }), procs=16)
+                                                                  }), procs=8)
     wb.dictionary_freeze = True
     X_title = wb.fit_transform(df['title'].fillna(''))
     del(wb)
@@ -447,7 +447,7 @@ if args.wordbatch == 'True':
                                                                   "hash_size": 2 ** 28,
                                                                   "norm": "l2",
                                                                   "tf": 1.0,
-                                                                  "idf": None}), procs=16)
+                                                                  "idf": None}), procs=8)
     wb.dictionary_freeze = True
     X_description = wb.fit_transform(df['description'].fillna(''))
     del(wb)
