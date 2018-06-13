@@ -174,12 +174,15 @@ if args.compare == 'True':
         df['pos_title'].to_csv("pos_title.csv", index=True, header='pos_title')
         df['neg_title'].to_csv("neg_title.csv", index=True, header='neg_title')
     else:
-        pos_title = pd.read_csv("pos_title.csv")
-        neg_title = pd.read_csv("neg_title.csv")
+        pos_title = pd.read_csv("pos_title.csv", index_col='item_id')
+        neg_title = pd.read_csv("neg_title.csv", index_col='item_id')
         df = pd.concat([df,pos_title], axis=1)
         df = pd.concat([df,neg_title], axis=1)
 
 if args.deal == 'True':
+    ##############################################################################################################
+    print("Features Involved with Deal Probability")
+    ##############################################################################################################
     # bins of deal probability
     df['avg_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('mean'))
     df['std_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('std'))
@@ -190,7 +193,7 @@ if args.deal == 'True':
     bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
     df['item_bin'] = pd.cut(df.item_seq_number,bins, labels=bin_label).astype('category')
     df['avg_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
-    df['std_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
+    df['std_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['std'])
     df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     categorical = categorical + ['item_bin']
@@ -338,8 +341,8 @@ if args.text == 'True':
                 if c.isdigit() or c.isalpha() or c.isalnum() or c.isspace() or c in punct:
                     continue
                 emoji.add(c)
-        df[cols] = df[cols].astype(str)
-        df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
+        # df[cols] = df[cols].astype(str)
+        # df[cols] = df[cols].astype(str).fillna('missing') # FILL NA
         df[cols + '_num_capital'] = df[cols].apply(lambda x: sum(c.isupper() for c in x))
         df[cols] = df[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
         df[cols + '_num_char'] = df[cols].apply(lambda x: len(str(x)))
@@ -448,8 +451,8 @@ if args.wordbatch == 'True':
         df['title'].to_csv("stemmed_title.csv", index=True, header='title')
     else:
         df.drop(textfeats,axis=1, inplace=True)
-        stemmed_description = pd.read_csv("stemmed_description.csv")
-        stemmed_title = pd.read_csv("stemmed_title.csv")
+        stemmed_description = pd.read_csv("stemmed_description.csv", index_col='item_id')
+        stemmed_title = pd.read_csv("stemmed_title.csv", index_col='item_id')
         df = pd.concat([df,stemmed_description], axis=1)
         df = pd.concat([df,stemmed_title], axis=1)
 
