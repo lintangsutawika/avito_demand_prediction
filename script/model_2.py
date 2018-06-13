@@ -437,6 +437,29 @@ if args.wordbatch == 'True':
         except:
             return stemmer.stem(word)
 
+    def ridgeSolver(X_train, X_test, y_train, solver_alg):
+        oof_train = np.zeros((ntrain,))
+        oof_test = np.zeros((ntest,))
+        oof_test_skf = np.empty((NFOLDS, ntest))
+
+        for i, (train_ind, test_ind) in enumerate(kf):
+            print('Ridge Regression, Fold {}'.format(i))
+            x_tr = X_train[train_ind]
+            y_tr = y_train
+            x_te = X_train[test_ind]
+
+            model = Ridge(solver=solver_alg, fit_intercept=True, random_state=205, alpha=3.3)
+            model.fit(x_tr, y_tr)
+            oof_train[test_ind] = model.predict(x_te)
+            oof_test_skf[i, :] = model.predict(X_test)
+
+        oof_test[:] = oof_test_skf.mean(axis=0)
+        oof_train = oof_train.reshape(-1, 1)
+        oof_test = oof_test.reshape(-1, 1)
+        rms = sqrt(mean_squared_error(y, oof_train))
+        print('Ridge OOF {}, RMSE: {}'.format(solver_alg, rms))
+        return np.concatenate([oof_train, oof_test])
+
     tqdm.pandas()
     if "stemmed_description.csv" not in os.listdir("."):
         stemmer = SnowballStemmer("russian") 
@@ -507,28 +530,34 @@ if args.wordbatch == 'True':
     X_description = X_description[:, mask]
     print(X_description.shape)
 
-    oof_train = np.zeros((ntrain,))
-    oof_test = np.zeros((ntest,))
-    oof_test_skf = np.empty((NFOLDS, ntest))
+    # oof_train = np.zeros((ntrain,))
+    # oof_test = np.zeros((ntest,))
+    # oof_test_skf = np.empty((NFOLDS, ntest))
 
-    for i, (train_ind, test_ind) in enumerate(kf):
-        print('Ridge Regression, Fold {}'.format(i))
-        x_tr = X_description[:ntrain][train_ind]
-        y_tr = y[train_ind]
-        x_te = X_description[:ntrain][test_ind]
+    # for i, (train_ind, test_ind) in enumerate(kf):
+    #     print('Ridge Regression, Fold {}'.format(i))
+    #     x_tr = X_description[:ntrain][train_ind]
+    #     y_tr = y[train_ind]
+    #     x_te = X_description[:ntrain][test_ind]
 
-        model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
-        model.fit(x_tr, y_tr)
-        oof_train[test_ind] = model.predict(x_te)
-        oof_test_skf[i, :] = model.predict(X_description[ntrain:])
+    #     model = Ridge(solver="sag", fit_intercept=True, random_state=205, alpha=3.3)
+    #     model.fit(x_tr, y_tr)
+    #     oof_train[test_ind] = model.predict(x_te)
+    #     oof_test_skf[i, :] = model.predict(X_description[ntrain:])
 
-    oof_test[:] = oof_test_skf.mean(axis=0)
-    oof_train = oof_train.reshape(-1, 1)
-    oof_test = oof_test.reshape(-1, 1)
-    rms = sqrt(mean_squared_error(y, oof_train))
-    print('Ridge OOF RMSE: {}'.format(rms))
-    ridge_preds = np.concatenate([oof_train, oof_test])
-    df['description_ridge_preds'] = ridge_preds
+    # oof_test[:] = oof_test_skf.mean(axis=0)
+    # oof_train = oof_train.reshape(-1, 1)
+    # oof_test = oof_test.reshape(-1, 1)
+    # rms = sqrt(mean_squared_error(y, oof_train))
+    # print('Ridge OOF RMSE: {}'.format(rms))
+    # df['description_ridge_preds_sag'] = np.concatenate([oof_train, oof_test])
+
+    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag")
+    df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga")
+    df['description_ridge_preds_svd'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "svd")
+    df['description_ridge_preds_cholesky'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "cholesky")
+    df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr")
+    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg")
     gc.collect()
 
 ##############################################################################################################
@@ -553,7 +582,7 @@ print("Modeling Stage")
 print("Light Gradient Boosting Regressor")
 lgbm_params =  {
     'task': 'train',
-    'boosting_type': 'dart',
+    'boosting_type': 'gbdt',
     'objective': 'regression',
     'metric': 'rmse',
     # 'max_depth': 15,
