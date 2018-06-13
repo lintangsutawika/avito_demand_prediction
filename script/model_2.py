@@ -515,7 +515,6 @@ if args.wordbatch == 'True':
 
     df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag"),gc.collect()
     df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga"),gc.collect()
-    df['title_ridge_preds_cholesky'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "cholesky"),gc.collect()
     df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr"),gc.collect()
     df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg"),gc.collect()
 
@@ -536,7 +535,6 @@ if args.wordbatch == 'True':
 
     df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag"),gc.collect()
     df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga"),gc.collect()
-    df['description_ridge_preds_cholesky'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "cholesky"),gc.collect()
     df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr"),gc.collect()
     df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg"),gc.collect()
 
