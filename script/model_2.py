@@ -318,18 +318,6 @@ if args.text == 'True':
     ##############################################################################################################
     print("Text Features")
     ##############################################################################################################
-    def cleanName(text):
-        try:
-            textProc = text.lower()
-            # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
-            #regex = re.compile(u'[^[:alpha:]]')
-            #textProc = regex.sub(" ", textProc)
-            textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
-            textProc = " ".join(textProc.split())
-            return textProc
-        except:
-            return "name error"
-
     # df['title'] = df['title'].apply(lambda x: cleanName(x))
     # df["description"]   = df["description"].apply(lambda x: cleanName(x))
     df['desc_punc'] = df['description'].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
@@ -385,7 +373,7 @@ if args.wordbatch == 'True':
             # textProc = " ".join(map(str.strip, re.split('(\d+)',textProc)))
             #regex = re.compile(u'[^[:alpha:]]')
             #textProc = regex.sub(" ", textProc)
-            textProc.sub(r"((\d+)[.,\-:]{0,}(\d+))","N",textProc)
+            textProc = re.sub(r"((\d+)[.,\-:]{0,}(\d+))","N",textProc)
             textProc = re.sub('[!@#$_“”¨«»®´·º½¾¿¡§£₤‘’]', '', textProc)
             textProc = " ".join(textProc.split())
             return textProc
