@@ -67,6 +67,8 @@ parser.add_argument('--target', default=False)
 parser.add_argument('--wordbatch', default=False)
 parser.add_argument('--image', default=False)
 parser.add_argument('--sparse', default=False)
+parser.add_argument('--deal', default=False)
+parser.add_argument('--compare', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -87,6 +89,8 @@ print("target: {}".format(args.target))
 print("wordbatch: {}".format(args.wordbatch))
 print("image: {}".format(args.image))
 print("sparse: {}".format(args.sparse))
+print("deal: {}".format(args.deal))
+print("compare: {}".format(args.compare))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -98,7 +102,9 @@ ntrain = training.shape[0]
 ntest = testing.shape[0]
 
 y = training['deal_probability']
-training.drop("deal_probability",axis=1, inplace=True)
+df_train = training.copy()
+# training.drop("deal_probability",axis=1, inplace=True)
+testing['deal_probability'] = -1
 print('Train shape: {} Rows, {} Columns'.format(*training.shape))
 print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
 print("Combine Train and Test")
@@ -156,10 +162,51 @@ if args.image_top == 'True':
     df.drop(['image_top_1'], axis=1, inplace=True)
     df = pd.concat([df,pd.concat([training['image_top_1'],testing['image_top_1']],axis=0)], axis=1)
 
+if args.compare == 'True':
+    if "pos_title.csv" not in os.listdir("."):
+        good_performing_ads = df_train[df_train['deal_probability'] >= 0.90]
+        bad_performing_ads = df_train[df_train['deal_probability'] <= 0.05]
+        pos_text_cln = list(" ".join(good_performing_ads.title).split(" "))
+        neg_text_cln = list(" ".join(bad_performing_ads.title).split(" "))
+        tqdm.pandas()
+        df['pos_title'] = df['title'].progress_apply(lambda x: sum(np.isin(x.split(" "),pos_text_cln)))
+        df['neg_title'] = df['title'].progress_apply(lambda x: sum(np.isin(x.split(" "),neg_text_cln)))
+        df['pos_title'].to_csv("pos_title.csv", index=True, header='pos_title')
+        df['neg_title'].to_csv("neg_title.csv", index=True, header='neg_title')
+    else:
+        pos_title = pd.read_csv("pos_title.csv")
+        neg_title = pd.read_csv("neg_title.csv")
+        df = pd.concat([df,pos_title], axis=1)
+        df = pd.concat([df,neg_title], axis=1)
+
+if args.deal == 'True':
+    # bins of deal probability
+    df['avg_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('mean'))
+    df['std_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('std'))
+    df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
+
+    bins = np.linspace(min(df.item_seq_number.values)-1,max(df.item_seq_number.values),int(max(df.item_seq_number.values)/500)).astype(int)
+    bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
+    df['item_bin'] = pd.cut(df.item_seq_number,bins, labels=bin_label)
+    df['avg_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
+    df['std_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
+    df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
+    df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
+    categorical = categorical + ['item_bin']
+
 if args.mean == "True":
     ##############################################################################################################
     print("Statistical Encoding for Categorical Features")
     ############################################################################################################## 
+    df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
+    df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
+    df['var_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('var')
+    df['med_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('median')
+    df['avg_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('mean')
+    df['std_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('std')
+    df['var_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('var')
+    df['med_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('median')
     df['avg_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('mean')
     df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
     df['var_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('var')
@@ -480,7 +527,10 @@ if args.wordbatch == 'True':
     df['description_ridge_preds'] = ridge_preds
     gc.collect()
 
-df.drop(textfeats+["user_id"],axis=1, inplace=True)
+##############################################################################################################
+print("Build Dataset")
+##############################################################################################################
+df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
 
