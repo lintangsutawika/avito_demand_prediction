@@ -188,7 +188,7 @@ if args.deal == 'True':
 
     bins = np.linspace(min(df.item_seq_number.values)-1,max(df.item_seq_number.values),int(max(df.item_seq_number.values)/500)).astype(int)
     bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
-    df['item_bin'] = pd.cut(df.item_seq_number,bins, labels=bin_label)
+    df['item_bin'] = pd.cut(df.item_seq_number,bins, labels=bin_label).astype('category')
     df['avg_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
     df['std_deal_by_item_seq_number_bin'] = df['item_bin'].map(df.loc[train_index,['item_bin','deal_probability']].groupby(['item_bin'])['deal_probability'].describe()['mean'])
     df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
@@ -203,7 +203,10 @@ if args.categorical == "True":
     # Encoder:
     lbl = preprocessing.LabelEncoder()
     for col in categorical:
-        df[col].fillna('Unknown')
+        try:
+            df[col].fillna('Unknown')
+        except:
+            pass
         df[col] = lbl.fit_transform(df[col].astype(str))
 else:
     df.drop(categorical,axis=1, inplace=True)
