@@ -68,6 +68,7 @@ parser.add_argument('--wordbatch', default=False)
 parser.add_argument('--image', default=False)
 parser.add_argument('--sparse', default=False)
 parser.add_argument('--deal', default=False)
+parser.add_argument('--compare', default=False)
 parser.add_argument('--tfidf', default=False)
 args = parser.parse_args()
 
