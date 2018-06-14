@@ -68,7 +68,7 @@ parser.add_argument('--wordbatch', default=False)
 parser.add_argument('--image', default=False)
 parser.add_argument('--sparse', default=False)
 parser.add_argument('--deal', default=False)
-parser.add_argument('--compare', default=False)
+parser.add_argument('--tfidf', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -91,6 +91,7 @@ print("image: {}".format(args.image))
 print("sparse: {}".format(args.sparse))
 print("deal: {}".format(args.deal))
 print("compare: {}".format(args.compare))
+print("tfidf: {}".format(args.tfidf))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -592,6 +593,63 @@ if args.wordbatch == 'True':
         description_ridge_preds_sparse_cg = pd.read_csv("description_ridge_preds_sparse_cg.csv", index_col='item_id')
         df = pd.concat([df,description_ridge_preds_sparse_cg], axis=1)        
 
+if args.tfidf == "True":
+    ##############################################################################################################
+    print("TFIDF Features")
+    ##############################################################################################################
+    if args.stem == 'True':
+        print("With stemming")
+        stemmer = SnowballStemmer("russian") 
+        tokenizer = toktok.ToktokTokenizer()
+
+        def stemRussian(word, stemmer):
+            try:
+                word.encode(encoding='utf-8').decode('ascii')
+                return word
+            except:
+                return stemmer.stem(word)
+
+        tqdm.pandas()
+        if "stemmed_description.csv" not in os.listdir("."):
+            df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+            df['description'].to_csv("stemmed_description.csv", index= False, header='description')
+            df.to_pickle("stemmed")
+        else:
+            pass
+            # df['description'] = pd.read_csv("stemmed_description.csv").values
+            # read_pickle
+    russian_stop = set(stopwords.words('russian'))
+    tfidf_para = {
+        "stop_words": russian_stop,
+        "analyzer": 'word',
+        "token_pattern": r'\w{1,}',
+        "sublinear_tf": True,
+        "dtype": np.float32,
+        "norm": 'l2',
+        #"min_df":5,
+        #"max_df":.9,
+        "smooth_idf":False
+        }
+
+    def get_col(col_name): return lambda x: x[col_name]
+    ##I added to the max_features of the description. It did not change my score much but it may be worth investigating
+    vectorizer = FeatureUnion([
+            ('description',TfidfVectorizer(
+                ngram_range=(1, 2),
+                max_features=17000,
+                **tfidf_para,
+                preprocessor=get_col('description'))),
+            ('title',CountVectorizer(
+                ngram_range=(1, 2),
+                stop_words = russian_stop,
+                #max_features=7000,
+                preprocessor=get_col('title')))
+        ])
+    vectorizer.fit(df.to_dict('records'))
+    ready_df = vectorizer.transform(df.to_dict('records'))
+    print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
+    tfvocab = vectorizer.get_feature_names()
+
 ##############################################################################################################
 print("Build Dataset")
 ##############################################################################################################
@@ -600,8 +658,9 @@ if args.build_features == "True":
     sys.exit(1)
 
 if args.sparse == "True":
-    X = hstack([csr_matrix(df.loc[train_index,:].values),X_description[0:train_index.shape[0]]]) # Sparse Matrix
-    testing = hstack([csr_matrix(df.loc[test_index,:].values),X_description[train_index.shape[0]:]])
+    X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
+    testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
+    # tfvocab = df.columns.tolist() + ["f_"+str(i) for i in range(X_description.shape[1])]
     tfvocab = df.columns.tolist() + tfvocab
 else:
     X = df.loc[train_index,:].values
