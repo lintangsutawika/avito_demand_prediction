@@ -513,14 +513,37 @@ if args.wordbatch == 'True':
     X_title = X_title[:, mask]
     print(X_title.shape)
 
-    df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
-    gc.collect()
-    df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga")
-    gc.collect()
-    df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr")
-    gc.collect()
-    df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg")
-    gc.collect()
+    if "title_ridge_preds_sag.csv" not in os.listdir("."):
+        df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
+        df['title_ridge_preds_sag'].to_csv("title_ridge_preds_sag.csv", index=True, header='title_ridge_preds_sag')
+        gc.collect()
+    else:
+        title_ridge_preds_sag = pd.read_csv("title_ridge_preds_sag.csv", index_col='item_id')
+        df = pd.concat([df,title_ridge_preds_sag], axis=1)
+
+    if "title_ridge_preds_saga.csv" not in os.listdir("."):
+        df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga")
+        df['title_ridge_preds_saga'].to_csv("title_ridge_preds_saga.csv", index=True, header='title_ridge_preds_saga')
+        gc.collect()
+    else:
+        title_ridge_preds_saga = pd.read_csv("title_ridge_preds_saga.csv", index_col='item_id')
+        df = pd.concat([df,title_ridge_preds_saga], axis=1)
+
+    if "title_ridge_preds_lsqr.csv" not in os.listdir("."):
+        df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr")
+        df['title_ridge_preds_lsqr'].to_csv("title_ridge_preds_lsqr.csv", index=True, header='title_ridge_preds_lsqr')
+        gc.collect()
+    else:
+        title_ridge_preds_lsqr = pd.read_csv("title_ridge_preds_lsqr.csv", index_col='item_id')
+        df = pd.concat([df,title_ridge_preds_lsqr], axis=1)
+
+    if "title_ridge_preds_sparse_cg.csv" not in os.listdir("."):
+        df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg")
+        df['title_ridge_preds_sparse_cg'].to_csv("title_ridge_preds_sparse_cg.csv", index=True, header='title_ridge_preds_sparse_cg')
+        gc.collect()
+    else:
+        title_ridge_preds_sparse_cg = pd.read_csv("title_ridge_preds_sparse_cg.csv", index_col='item_id')
+        df = pd.concat([df,title_ridge_preds_sparse_cg], axis=1)
 
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.0, 1.0],
@@ -537,14 +560,37 @@ if args.wordbatch == 'True':
     X_description = X_description[:, mask]
     print(X_description.shape)
 
-    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag")
-    gc.collect()
-    df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga")
-    gc.collect()
-    df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr")
-    gc.collect()
-    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg")
-    gc.collect()
+    if "description_ridge_preds_sag.csv" not in os.listdir("."):
+        df['description_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
+        df['description_ridge_preds_sag'].to_csv("description_ridge_preds_sag.csv", index=True, header='description_ridge_preds_sag')
+        gc.collect()
+    else:
+        title_ridge_preds_sag = pd.read_csv("description_ridge_preds_sag.csv", index_col='item_id')
+        df = pd.concat([df,title_ridge_preds_sag], axis=1)
+
+    if "description_ridge_preds_saga.csv" not in os.listdir("."):
+        df['description_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga")
+        df['description_ridge_preds_saga'].to_csv("description_ridge_preds_saga.csv", index=True, header='description_ridge_preds_saga')
+        gc.collect()
+    else:
+        description_ridge_preds_saga = pd.read_csv("description_ridge_preds_saga.csv", index_col='item_id')
+        df = pd.concat([df,description_ridge_preds_saga], axis=1)
+
+    if "description_ridge_preds_lsqr.csv" not in os.listdir("."):
+        df['description_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr")
+        df['description_ridge_preds_lsqr'].to_csv("description_ridge_preds_lsqr.csv", index=True, header='description_ridge_preds_lsqr')
+        gc.collect()
+    else:
+        description_ridge_preds_lsqr = pd.read_csv("description_ridge_preds_lsqr.csv", index_col='item_id')
+        df = pd.concat([df,description_ridge_preds_lsqr], axis=1)
+
+    if "description_ridge_preds_sparse_cg.csv" not in os.listdir("."):
+        df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg")
+        df['description_ridge_preds_sparse_cg'].to_csv("description_ridge_preds_sparse_cg.csv", index=True, header='description_ridge_preds_sparse_cg')
+        gc.collect()
+    else:
+        description_ridge_preds_sparse_cg = pd.read_csv("description_ridge_preds_sparse_cg.csv", index_col='item_id')
+        df = pd.concat([df,description_ridge_preds_sparse_cg], axis=1)        
 
 ##############################################################################################################
 print("Build Dataset")
