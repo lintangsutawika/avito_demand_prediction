@@ -610,15 +610,23 @@ if args.tfidf == "True":
             except:
                 return stemmer.stem(word)
 
-        tqdm.pandas()
-        if "stemmed_description.csv" not in os.listdir("."):
-            df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
-            df['description'].to_csv("stemmed_description.csv", index= False, header='description')
-            df.to_pickle("stemmed")
-        else:
-            pass
-            # df['description'] = pd.read_csv("stemmed_description.csv").values
-            # read_pickle
+    tqdm.pandas()
+    if "stemmed_description.csv" not in os.listdir("."):
+        stemmer = SnowballStemmer("russian") 
+        tokenizer = toktok.ToktokTokenizer()
+        df["title"] = df["title"].apply(lambda x: cleanName(x)) 
+        df["description"] = df["description"].apply(lambda x: cleanName(x))
+        df['description'] = df['description'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+        df['description'].to_csv("stemmed_description.csv", index=True, header='description')
+        df['title'] = df['title'].progress_apply(lambda x: " ".join([stemRussian(word, stemmer) for word in tokenizer.tokenize(x)]))
+        df['title'].to_csv("stemmed_title.csv", index=True, header='title')
+    else:
+        df.drop(textfeats,axis=1, inplace=True)
+        stemmed_description = pd.read_csv("stemmed_description.csv", index_col='item_id')
+        stemmed_title = pd.read_csv("stemmed_title.csv", index_col='item_id')
+        df = pd.concat([df,stemmed_description], axis=1)
+        df = pd.concat([df,stemmed_title], axis=1)
+        
     russian_stop = set(stopwords.words('russian'))
     tfidf_para = {
         "stop_words": russian_stop,
@@ -654,6 +662,11 @@ if args.tfidf == "True":
 ##############################################################################################################
 print("Build Dataset")
 ##############################################################################################################
+#Drop selected features
+df.drop(['title_num_emoji','title_emoji_vs_char','title_words_vs_unique','description_num_emoji'
+        'std_deal_by_item_seq_number_bin','avg_deal_by_item_seq_number_bin','title_num_spaces'
+        'title_num_punctuations','var_price_by_param_1','title_num_unique_words'])
+
 df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
 if args.build_features == "True":
     sys.exit(1)
