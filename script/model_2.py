@@ -598,17 +598,15 @@ if args.tfidf == "True":
     ##############################################################################################################
     print("TFIDF Features")
     ##############################################################################################################
-    if args.stem == 'True':
-        print("With stemming")
-        stemmer = SnowballStemmer("russian") 
-        tokenizer = toktok.ToktokTokenizer()
+    stemmer = SnowballStemmer("russian") 
+    tokenizer = toktok.ToktokTokenizer()
 
-        def stemRussian(word, stemmer):
-            try:
-                word.encode(encoding='utf-8').decode('ascii')
-                return word
-            except:
-                return stemmer.stem(word)
+    def stemRussian(word, stemmer):
+        try:
+            word.encode(encoding='utf-8').decode('ascii')
+            return word
+        except:
+            return stemmer.stem(word)
 
     tqdm.pandas()
     if "stemmed_description.csv" not in os.listdir("."):
