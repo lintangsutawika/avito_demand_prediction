@@ -500,20 +500,20 @@ if args.wordbatch == 'True':
         df = pd.concat([df,stemmed_description], axis=1)
         df = pd.concat([df,stemmed_title], axis=1)
 
-    wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
-                                                                  "hash_ngrams_weights": [1.5, 1.0],
-                                                                  "hash_size": 2 ** 29,
-                                                                  "norm": None,
-                                                                  "tf": 'binary',
-                                                                  "idf": None,
-                                                                  }), procs=8)
-    wb.dictionary_freeze = True
-    X_title = wb.fit_transform(df['title'].fillna(''))
-    del(wb)
-    gc.collect()
-    mask = np.where(X_title.getnnz(axis=0) > 3)[0]
-    X_title = X_title[:, mask]
-    print(X_title.shape)
+    # wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
+    #                                                               "hash_ngrams_weights": [1.5, 1.0],
+    #                                                               "hash_size": 2 ** 29,
+    #                                                               "norm": None,
+    #                                                               "tf": 'binary',
+    #                                                               "idf": None,
+    #                                                               }), procs=8)
+    # wb.dictionary_freeze = True
+    # X_title = wb.fit_transform(df['title'].fillna(''))
+    # del(wb)
+    # gc.collect()
+    # mask = np.where(X_title.getnnz(axis=0) > 3)[0]
+    # X_title = X_title[:, mask]
+    # print(X_title.shape)
 
     if "title_ridge_preds_sag.csv" not in os.listdir("."):
         df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
@@ -547,20 +547,20 @@ if args.wordbatch == 'True':
         title_ridge_preds_sparse_cg = pd.read_csv("title_ridge_preds_sparse_cg.csv", index_col='item_id')
         df = pd.concat([df,title_ridge_preds_sparse_cg], axis=1)
 
-    wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
-                                                                  "hash_ngrams_weights": [1.0, 1.0],
-                                                                  "hash_size": 2 ** 28,
-                                                                  "norm": "l2",
-                                                                  "tf": 1.0,
-                                                                  "idf": None
-                                                                  }), procs=8)
-    wb.dictionary_freeze = True
-    X_description = wb.fit_transform(df['description'].fillna(''))
-    del(wb)
-    gc.collect()
-    mask = np.where(X_description.getnnz(axis=0) > 8)[0]
-    X_description = X_description[:, mask]
-    print(X_description.shape)
+    # wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
+    #                                                               "hash_ngrams_weights": [1.0, 1.0],
+    #                                                               "hash_size": 2 ** 28,
+    #                                                               "norm": "l2",
+    #                                                               "tf": 1.0,
+    #                                                               "idf": None
+    #                                                               }), procs=8)
+    # wb.dictionary_freeze = True
+    # X_description = wb.fit_transform(df['description'].fillna(''))
+    # del(wb)
+    # gc.collect()
+    # mask = np.where(X_description.getnnz(axis=0) > 8)[0]
+    # X_description = X_description[:, mask]
+    # print(X_description.shape)
 
     if "description_ridge_preds_sag.csv" not in os.listdir("."):
         df['description_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
