@@ -513,10 +513,10 @@ if args.wordbatch == 'True':
     X_title = X_title[:, mask]
     print(X_title.shape)
 
-    df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag"),gc.collect()
-    # df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga"),gc.collect()
-    # df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr"),gc.collect()
-    df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg"),gc.collect()
+    df['title_ridge_preds_sag'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sag")
+    df['title_ridge_preds_saga'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "saga")
+    df['title_ridge_preds_lsqr'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "lsqr")
+    df['title_ridge_preds_sparse_cg'] = ridgeSolver(X_title[:ntrain], X_title[ntrain:], y, "sparse_cg")
 
     wb = wordbatch.WordBatch(normalize_text, extractor=(WordBag, {"hash_ngrams": 2,
                                                                   "hash_ngrams_weights": [1.0, 1.0],
@@ -533,10 +533,10 @@ if args.wordbatch == 'True':
     X_description = X_description[:, mask]
     print(X_description.shape)
 
-    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag"),gc.collect()
-    # df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga"),gc.collect()
-    # df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr"),gc.collect()
-    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg"),gc.collect()
+    df['description_ridge_preds_sag'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sag")
+    df['description_ridge_preds_saga'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "saga")
+    df['description_ridge_preds_lsqr'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "lsqr")
+    df['description_ridge_preds_sparse_cg'] = ridgeSolver(X_description[:ntrain], X_description[ntrain:], y, "sparse_cg")
 
 ##############################################################################################################
 print("Build Dataset")
