@@ -620,8 +620,8 @@ if args.tfidf == "True":
         df['title'].to_csv("stemmed_title.csv", index=True, header='title')
     else:
         df.drop(textfeats,axis=1, inplace=True)
-        stemmed_description = pd.read_csv("stemmed_description.csv", index_col='item_id')
-        stemmed_title = pd.read_csv("stemmed_title.csv", index_col='item_id')
+        stemmed_description = pd.read_csv("stemmed_description.csv", index_col='item_id').astype(str)
+        stemmed_title = pd.read_csv("stemmed_title.csv", index_col='item_id').astype(str)
         df = pd.concat([df,stemmed_description], axis=1)
         df = pd.concat([df,stemmed_title], axis=1)
         
