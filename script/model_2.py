@@ -201,8 +201,9 @@ if args.deal == 'True':
                                     "25%"   :"q1_deal_by_parent_category_name_user_type", 
                                     "50%"   :"med_deal_by_parent_category_name_user_type", 
                                     "75%"   :"q3_deal_by_parent_category_name_user_type", 
-                                    "max"   :"max_deal_by_parent_category_name_user_type"})
-    df.join(temp, on=['parent_category_name','user_type'])
+                                    "max"   :"max_deal_by_parent_category_name_user_type"},
+                            inplace=True)
+    df = df.join(temp, on=['parent_category_name','user_type'])
     df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['min_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
