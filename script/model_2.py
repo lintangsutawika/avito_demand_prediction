@@ -70,6 +70,7 @@ parser.add_argument('--sparse', default=False)
 parser.add_argument('--deal', default=False)
 parser.add_argument('--compare', default=False)
 parser.add_argument('--tfidf', default=False)
+parser.add_argument('--test', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -93,6 +94,7 @@ print("sparse: {}".format(args.sparse))
 print("deal: {}".format(args.deal))
 print("compare: {}".format(args.compare))
 print("tfidf: {}".format(args.tfidf))
+print("test: {}".format(args.test))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -663,7 +665,7 @@ print("Build Dataset")
 #Drop selected features
 df.drop(['title_num_emoji','title_emoji_vs_char','title_words_vs_unique','description_num_emoji'
         'std_deal_by_item_seq_number_bin','avg_deal_by_item_seq_number_bin','title_num_spaces'
-        'title_num_punctuations','var_price_by_param_1','title_num_unique_words'])
+        'title_num_punctuations','var_price_by_param_1','title_num_unique_words'],axis=1, inplace=True)
 
 df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
 if args.build_features == "True":
@@ -672,12 +674,16 @@ if args.build_features == "True":
 if args.sparse == "True":
     X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
     testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
-    # tfvocab = df.columns.tolist() + ["f_"+str(i) for i in range(X_description.shape[1])]
     tfvocab = df.columns.tolist() + tfvocab
+    del ready_df
+    gc.collect()
 else:
     X = df.loc[train_index,:].values
     testing = df.loc[test_index,:].values
     tfvocab = df.columns.tolist()
+
+del training
+gc.collect()
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
@@ -713,35 +719,34 @@ models = []
 temp_prediction = []
 kf_ = KFOLD(n_splits=nFolds, shuffle=True, random_state=SEED)
 for train, valid in kf_.split(X):
-    if i == 0:    
-        if issparse(X):
-            X = X.tocsr()
-        lgbtrain = lgb.Dataset(X[train], y[train],
-                        feature_name=tfvocab,
-                        categorical_feature = categorical)
-        lgbvalid = lgb.Dataset(X[valid], y[valid],
-                        feature_name=tfvocab,
-                        categorical_feature = categorical)
+    if issparse(X):
+        X = X.tocsr()
+    lgbtrain = lgb.Dataset(X[train], y[train],
+                    feature_name=tfvocab,
+                    categorical_feature = categorical)
+    lgbvalid = lgb.Dataset(X[valid], y[valid],
+                    feature_name=tfvocab,
+                    categorical_feature = categorical)
 
-        model = lgb.train(
-            lgbm_params,
-            lgbtrain,
-            num_boost_round=20000,
-            valid_sets=[lgbtrain, lgbvalid],
-            valid_names=['train','valid'],
-            early_stopping_rounds=50,
-            verbose_eval=100
-        )
+    model = lgb.train(
+        lgbm_params,
+        lgbtrain,
+        num_boost_round=20000,
+        valid_sets=[lgbtrain, lgbvalid],
+        valid_names=['train','valid'],
+        early_stopping_rounds=50,
+        verbose_eval=100
+    )
 
-        model.save_model('model_{}.txt'.format(i));i += 1
-        validation_score = np.sqrt(metrics.mean_squared_error(y[valid], model.predict(X[valid])))
-        print('Fold {}, RMSE: {}'.format(i,validation_score))
-        cv_score += validation_score
-        models.append(model)
-        feature = pd.DataFrame(data={'feature':model.feature_name(),'importance':model.feature_importance()})
+    model.save_model('model_{}.txt'.format(i));i += 1
+    validation_score = np.sqrt(metrics.mean_squared_error(y[valid], model.predict(X[valid])))
+    print('Fold {}, RMSE: {}'.format(i,validation_score))
+    cv_score += validation_score
+    models.append(model)
+    feature = pd.DataFrame(data={'feature':model.feature_name(),'importance':model.feature_importance()})
         # print(feature.sort_values('importance'))
-    else:
-        break
+    if args.test == "True":
+        sys.exit(1)
 
 ##############################################################################################################
 print("Model Prediction Stage")
