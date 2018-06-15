@@ -114,7 +114,7 @@ print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
 print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
 
-# df["price"] = np.log1p(df["price"])
+df["price"] = np.log1p(df["price"]+0.01)
 df["price"].fillna(-1, inplace=True)
 # df["image_top_1"].fillna(-999,inplace=True)
 # df["week_of_year"] = df['activation_date'].dt.week
@@ -227,7 +227,8 @@ if args.deal == 'True':
     df['q3_deal_by_image_top_1'].fillna(-1, inplace=True)
     df['max_deal_by_image_top_1'].fillna(-1, inplace=True)
 
-    bins = np.linspace(min(df.price.values)-1,max(df.price.values),int(max(df.price.values)/10000)).astype(int)
+    # bins = np.linspace(min(df.price.values)-1,max(df.price.values),int(max(df.price.values)/0.01)).astype(int)
+    bins = np.logspace(min(df.price.values)-1,max(df.price.values),num=100, base=(np.e-1)).astype(float)
     bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
     df['price_range'] = pd.cut(df.price,bins, labels=bin_label).astype('category')
     df['avg_deal_by_price_range'] = df['price_range'].map(df.loc[train_index,['price_range','deal_probability']].groupby(['price_range'])['deal_probability'].describe()['mean'])
