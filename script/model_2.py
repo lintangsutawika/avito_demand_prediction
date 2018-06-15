@@ -675,7 +675,7 @@ if args.sparse == "True":
     X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
     testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
     tfvocab = df.columns.tolist() + tfvocab
-    del ready_df
+    del ready_df, vectorizer
     gc.collect()
 else:
     X = df.loc[train_index,:].values
@@ -714,7 +714,6 @@ lgbm_params =  {
 i = 0
 nFolds = 10
 cv_score = 0
-
 models = []
 temp_prediction = []
 kf_ = KFOLD(n_splits=nFolds, shuffle=True, random_state=SEED)
