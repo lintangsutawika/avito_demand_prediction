@@ -663,8 +663,8 @@ if args.tfidf == "True":
 print("Build Dataset")
 ##############################################################################################################
 #Drop selected features
-df.drop(['title_num_emoji','title_emoji_vs_char','title_words_vs_unique','description_num_emoji'
-        'std_deal_by_item_seq_number_bin','avg_deal_by_item_seq_number_bin','title_num_spaces'
+df.drop(['title_num_emoji','title_emoji_vs_char','title_words_vs_unique','description_num_emoji',
+        'std_deal_by_item_seq_number_bin','avg_deal_by_item_seq_number_bin','title_num_spaces',
         'title_num_punctuations','var_price_by_param_1','title_num_unique_words'],axis=1, inplace=True)
 
 df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
