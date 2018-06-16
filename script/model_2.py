@@ -310,10 +310,10 @@ if args.target == "True":
         def add_noise(series, noise_level):
             return series * (1 + noise_level * np.random.randn(len(series)))
 
-        def encode(self, train, test, target):
+        def encode(self, name, train, test, target):
             for col in self.cols:
                 if self.keep_original:
-                    train[col + '_te'], test[col + '_te'] = self.encode_column(train[col], test[col], target)
+                    train[col + name], test[col + name] = self.encode_column(train[col], test[col], target)
                 else:
                     train[col], test[col] = self.encode_column(train[col], test[col], target)
             return train, test
@@ -351,21 +351,19 @@ if args.target == "True":
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
     # training, testing = target_encode.encode(training, testing, y)
-    training, testing = target_encode.encode(training, testing, df['price'].iloc[:ntrain])
+    training, testing = target_encode.encode("_te_price_log", training, testing, df['price'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
     te_cats = [cat+"_te_price_full" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
-    # training, testing = target_encode.encode(training, testing, y)
-    training, testing = target_encode.encode(training, testing, df['price_full'].iloc[:ntrain])
+    training, testing = target_encode.encode("_te_price_full", training, testing, df['price_full'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
     te_cats = [cat+"_te_deal" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
-    # training, testing = target_encode.encode(training, testing, y)
-    training, testing = target_encode.encode(training, testing, df['deal_probability'].iloc[:ntrain])
+    training, testing = target_encode.encode("_te_deal", training, testing, df['deal_probability'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
 if args.cat2vec == 'True':
