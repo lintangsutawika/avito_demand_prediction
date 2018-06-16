@@ -330,6 +330,23 @@ if args.target == "True":
     training, testing = target_encode.encode(training, testing, df['price'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        try:
+            df[col].fillna('Unknown')
+        except:
+            pass
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
+    
 if args.cat2vec == 'True':
     ##############################################################################################################
     print("Cat2Vec Encoding for Categorical Features")
@@ -376,23 +393,6 @@ if args.cat2vec == 'True':
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
                         columns=["cat2vec_"+element for element in cat_cols], index=df.index)
     df = pd.concat([df,temp], axis=1)
-
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        try:
-            df[col].fillna('Unknown')
-        except:
-            pass
-        df[col] = lbl.fit_transform(df[col].astype(str))
-else:
-    df.drop(categorical,axis=1, inplace=True)
-    categorical = ""
 
 if args.text == 'True':
     ##############################################################################################################
