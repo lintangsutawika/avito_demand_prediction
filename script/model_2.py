@@ -141,7 +141,7 @@ testing["day_of_week"] = testing['activation_date'].dt.weekday
 textfeats = ["description", "title"]
 categorical = ["region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
-
+target_encode_category = categorical
 df.drop(["activation_date"],axis=1,inplace=True)
 
 if args.image == 'True':
@@ -361,12 +361,19 @@ if args.target == "True":
     training, testing = target_encode.encode(training, testing, df['price_full'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
+    te_cats = [cat+"_te_deal" for cat in f_cats]
+    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                                  keep_original=True, cols=f_cats)
+    # training, testing = target_encode.encode(training, testing, y)
+    training, testing = target_encode.encode(training, testing, df['deal_probability'].iloc[:ntrain])
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
+
 if args.cat2vec == 'True':
     ##############################################################################################################
     print("Cat2Vec Encoding for Categorical Features")
     ##############################################################################################################
     # cat_cols = ['region', 'city', 'parent_category_name','category_name' 'user_type', 'user_id']
-    cat_cols = categorical
+    cat_cols = target_encode_category
     def apply_w2v(sentences, model, num_features):
         def _average_word_vectors(words, model, vocabulary, num_features):
             feature_vector = np.zeros((num_features,), dtype="float64")
