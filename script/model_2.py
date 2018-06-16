@@ -130,6 +130,13 @@ training["price"].fillna(-1, inplace=True)
 # training["day_of_month"] = training['activation_date'].dt.day
 training["day_of_week"] = training['activation_date'].dt.weekday
 
+testing["price_full"] = testing["price"]
+testing["price"] = np.log1p(testing["price"]+0.01)
+testing["price"].fillna(-1, inplace=True)
+# testing["image_top_1"].fillna(-999,inplace=True)
+# testing["week_of_year"] = testing['activation_date'].dt.week
+# testing["day_of_month"] = testing['activation_date'].dt.day
+testing["day_of_week"] = testing['activation_date'].dt.weekday
 
 textfeats = ["description", "title"]
 categorical = ["region","city","parent_category_name","category_name",
@@ -340,11 +347,18 @@ if args.target == "True":
             return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
 
     f_cats = categorical
-    te_cats = [cat+"_te" for cat in f_cats]
+    te_cats = [cat+"_te_price_log" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
     # training, testing = target_encode.encode(training, testing, y)
     training, testing = target_encode.encode(training, testing, df['price'].iloc[:ntrain])
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
+
+    te_cats = [cat+"_te_price_full" for cat in f_cats]
+    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                                  keep_original=True, cols=f_cats)
+    # training, testing = target_encode.encode(training, testing, y)
+    training, testing = target_encode.encode(training, testing, df['price_full'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
 if args.cat2vec == 'True':
