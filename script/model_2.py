@@ -265,7 +265,24 @@ if args.deal == 'True':
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
 
     categorical = categorical + ['item_bin','price_range']
-   
+
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        try:
+            df[col].fillna('Unknown')
+        except:
+            pass
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
+    
 if args.target == "True":
     ##############################################################################################################
     print("Target Encoding for Categorical Features")
@@ -330,23 +347,6 @@ if args.target == "True":
     training, testing = target_encode.encode(training, testing, df['price'].iloc[:ntrain])
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        try:
-            df[col].fillna('Unknown')
-        except:
-            pass
-        df[col] = lbl.fit_transform(df[col].astype(str))
-else:
-    df.drop(categorical,axis=1, inplace=True)
-    categorical = ""
-    
 if args.cat2vec == 'True':
     ##############################################################################################################
     print("Cat2Vec Encoding for Categorical Features")
