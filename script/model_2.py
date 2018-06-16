@@ -179,10 +179,10 @@ if args.compare == 'True':
         df['pos_title'].to_csv("pos_title.csv", index=True, header='pos_title')
         df['neg_title'].to_csv("neg_title.csv", index=True, header='neg_title')
     else:
-        pos_title = pd.read_csv("pos_title.csv", index_col='item_id')
-        neg_title = pd.read_csv("neg_title.csv", index_col='item_id')
+        pos_title = pd.read_csv("pos_title.csv", index_col='item_id').astype(int)
+        # neg_title = pd.read_csv("neg_title.csv", index_col='item_id')
         df = pd.concat([df,pos_title], axis=1)
-        df = pd.concat([df,neg_title], axis=1)
+        # df = pd.concat([df,neg_title], axis=1)
 
 if args.deal == 'True':
     ##############################################################################################################
