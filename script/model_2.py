@@ -114,6 +114,7 @@ print('Test shape: {} Rows, {} Columns'.format(*testing.shape))
 print("Combine Train and Test")
 df = pd.concat([training,testing],axis=0)
 
+df["price_full"] = df["price"]
 df["price"] = np.log1p(df["price"]+0.01)
 df["price"].fillna(-1, inplace=True)
 # df["image_top_1"].fillna(-999,inplace=True)
