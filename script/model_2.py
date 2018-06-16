@@ -330,7 +330,7 @@ if args.target == "True":
             ft_tst_series.index = tst_series.index
             return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
 
-    f_cats = ["region","city","parent_category_name","category_name","user_type","param_1","param_2","param_3","image_top_1"]
+    f_cats = categorical
     te_cats = [cat+"_te" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
