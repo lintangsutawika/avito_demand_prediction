@@ -346,7 +346,7 @@ if args.target == "True":
             ft_tst_series.index = tst_series.index
             return self.add_noise(ft_trn_series, self.noise_level), self.add_noise(ft_tst_series, self.noise_level)
 
-    f_cats = categorical
+    f_cats = target_encode_category
     te_cats = [cat+"_te_price_log" for cat in f_cats]
     target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                                   keep_original=True, cols=f_cats)
@@ -373,7 +373,7 @@ if args.cat2vec == 'True':
     print("Cat2Vec Encoding for Categorical Features")
     ##############################################################################################################
     # cat_cols = ['region', 'city', 'parent_category_name','category_name' 'user_type', 'user_id']
-    cat_cols = target_encode_category
+    cat_cols = categorical
     def apply_w2v(sentences, model, num_features):
         def _average_word_vectors(words, model, vocabulary, num_features):
             feature_vector = np.zeros((num_features,), dtype="float64")
