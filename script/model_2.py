@@ -122,6 +122,15 @@ df["price"].fillna(-1, inplace=True)
 # df["day_of_month"] = df['activation_date'].dt.day
 df["day_of_week"] = df['activation_date'].dt.weekday
 
+training["price_full"] = training["price"]
+training["price"] = np.log1p(training["price"]+0.01)
+training["price"].fillna(-1, inplace=True)
+# training["image_top_1"].fillna(-999,inplace=True)
+# training["week_of_year"] = training['activation_date'].dt.week
+# training["day_of_month"] = training['activation_date'].dt.day
+training["day_of_week"] = training['activation_date'].dt.weekday
+
+
 textfeats = ["description", "title"]
 categorical = ["region","city","parent_category_name","category_name",
                 "user_type","image_top_1","param_1","param_2","param_3","day_of_week"]
@@ -257,23 +266,6 @@ if args.deal == 'True':
 
     categorical = categorical + ['item_bin','price_range']
    
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        try:
-            df[col].fillna('Unknown')
-        except:
-            pass
-        df[col] = lbl.fit_transform(df[col].astype(str))
-else:
-    df.drop(categorical,axis=1, inplace=True)
-    categorical = ""
-
 if args.target == "True":
     ##############################################################################################################
     print("Target Encoding for Categorical Features")
@@ -384,6 +376,23 @@ if args.cat2vec == 'True':
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
                         columns=["cat2vec_"+element for element in cat_cols], index=df.index)
     df = pd.concat([df,temp], axis=1)
+
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        try:
+            df[col].fillna('Unknown')
+        except:
+            pass
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
 
 if args.text == 'True':
     ##############################################################################################################
