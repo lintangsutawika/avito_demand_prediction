@@ -71,6 +71,7 @@ parser.add_argument('--deal', default=False)
 parser.add_argument('--compare', default=False)
 parser.add_argument('--tfidf', default=False)
 parser.add_argument('--test', default=False)
+parser.add_argument('--binary', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -95,6 +96,7 @@ print("deal: {}".format(args.deal))
 print("compare: {}".format(args.compare))
 print("tfidf: {}".format(args.tfidf))
 print("test: {}".format(args.test))
+print("binary: {}".format(args.binary))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -104,6 +106,13 @@ testing = pd.read_csv('../input/avito-demand-prediction/test.csv', parse_dates =
 
 ntrain = training.shape[0]
 ntest = testing.shape[0]
+
+if args.binary == "True":
+    training['deal_probability'][training['deal_probability'] <= 0.05] = 0    
+    training['deal_probability'][training['deal_probability'] > 0.05] = 1
+    objective = 'binary'
+else:
+    objective = 'regression'
 
 y = training['deal_probability']
 df_train = training.copy()
@@ -567,7 +576,8 @@ if args.mean == "True":
     df['med_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('quantile',q=0.75)
     df['max_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('max')
-    
+    df['distance_to_avg_price_by_avg_times_up_user'] = df['avg_price_by_avg_times_up_user'] - df['price']
+
     df['avg_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('mean')
     df['std_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('std')
     df['var_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('var')
@@ -576,6 +586,7 @@ if args.mean == "True":
     df['med_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('quantile',q=0.75)
     df['max_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('max')
+    df['distance_to_avg_price_by_parent_category_name_avg_times_up_user'] = df['avg_price_by_parent_category_name_avg_times_up_user'] - df['price']
 
     df['avg_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('mean')
     df['std_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('std')
@@ -585,6 +596,7 @@ if args.mean == "True":
     df['med_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('quantile',q=0.75)
     df['max_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('max')
+    df['distance_to_avg_price_by_avg_days_up_user'] = df['avg_price_by_avg_days_up_user'] - df['price']
     
     df['avg_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('mean')
     df['std_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('std')
@@ -594,6 +606,7 @@ if args.mean == "True":
     df['med_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('quantile',q=0.75)
     df['max_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('max')
+    df['distance_to_avg_price_by_parent_category_name_avg_days_up_user'] = df['avg_price_by_parent_category_name_avg_days_up_user'] - df['price']
 
     df['avg_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('mean')
     df['std_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('std')
@@ -603,6 +616,7 @@ if args.mean == "True":
     df['med_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('quantile',q=0.75)
     df['max_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('max')
+    df['distance_to_avg_price_by_parent_category_name_user_type'] = df['avg_price_by_parent_category_name_user_type'] - df['price']
 
     df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
     df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
@@ -612,6 +626,7 @@ if args.mean == "True":
     df['med_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('quantile',q=0.75)
     df['max_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('max')
+    df['distance_to_avg_price_by_item_seq_number'] = df['avg_price_by_item_seq_number'] - df['price']
 
     df['avg_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('mean')
     df['std_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('std')
@@ -621,6 +636,7 @@ if args.mean == "True":
     df['med_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('quantile',q=0.75)
     df['max_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('max')
+    df['distance_to_avg_price_by_title_num_char'] = df['avg_price_by_title_num_char'] - df['price']
 
     df['avg_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('mean')
     df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
@@ -630,6 +646,7 @@ if args.mean == "True":
     df['med_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('max')
+    df['distance_to_avg_price_by_param_1'] = df['avg_price_by_param_1'] - df['price']
 
     df['avg_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('mean')
     df['std_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('std')
@@ -639,6 +656,7 @@ if args.mean == "True":
     df['med_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('max')
+    df['distance_to_avg_price_by_region_day_of_week'] = df['avg_price_by_region_day_of_week'] - df['price']
 
     df['avg_price_by_city'] = df.groupby(['city'])['price'].transform('mean')
     df['std_price_by_city'] = df.groupby(['city'])['price'].transform('std')
@@ -648,6 +666,7 @@ if args.mean == "True":
     df['med_price_by_city'] = df.groupby(['city'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city'] = df.groupby(['city'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city'] = df.groupby(['city'])['price'].transform('max')
+    df['distance_to_avg_price_by_city'] = df['avg_price_by_city'] - df['price']
 
     df['avg_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('mean')
     df['std_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('std')
@@ -657,6 +676,7 @@ if args.mean == "True":
     df['med_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('max')
+    df['distance_to_avg_price_by_city_param_1'] = df['avg_price_by_city_param_1'] - df['price']
 
     df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
     df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
@@ -666,6 +686,7 @@ if args.mean == "True":
     df['med_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('max')
+    df['distance_to_avg_price_by_city_image_top_1'] = df['avg_price_by_city_image_top_1'] - df['price']
 
     df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
@@ -675,6 +696,7 @@ if args.mean == "True":
     df['med_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('max')
+    df['distance_to_avg_price_by_city_image_top_1_day_of_week'] = df['avg_price_by_city_image_top_1_day_of_week'] - df['price']
 
     df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
     df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
@@ -684,6 +706,7 @@ if args.mean == "True":
     df['med_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('max')
+    df['distance_to_avg_price_by_city_category_name'] = df['avg_price_by_city_category_name'] - df['price']
 
     df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
@@ -693,6 +716,7 @@ if args.mean == "True":
     df['med_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('max')
+    df['distance_to_avg_price_by_city_category_name_day_of_week'] = df['avg_price_by_city_category_name_day_of_week'] - df['price']
 
     df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
     df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('std')
@@ -702,6 +726,7 @@ if args.mean == "True":
     df['med_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('quantile',q=0.5)
     df['q3_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('quantile',q=0.75)
     df['max_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('max')
+    df['distance_to_avg_image_top_1_by_city'] = df['avg_image_top_1_by_city'] - df['image_top_1']
 
     df['avg_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('mean')
     df['std_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('std')
@@ -711,6 +736,7 @@ if args.mean == "True":
     df['med_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('quantile',q=0.5)
     df['q3_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('quantile',q=0.75)
     df['max_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('max')
+    df['distance_to_avg_image_top_1_by_city'] = df['avg_image_top_1_by_city'] - df['image_top_1']
 
 if args.wordbatch == 'True':
     ##############################################################################################################
@@ -947,7 +973,8 @@ if args.tfidf == "True":
     ready_df = vectorizer.transform(df.to_dict('records'))
     print("TFIDF Feature Shape: {}".format(np.shape(ready_df)))
     tfvocab = vectorizer.get_feature_names()
-
+    del vectorizer
+    gc.collect();
 ##############################################################################################################
 print("Build Dataset")
 ##############################################################################################################
@@ -961,10 +988,13 @@ if args.build_features == "True":
     sys.exit(1)
 
 if args.sparse == "True":
-    X = hstack([csr_matrix(df.loc[train_index,:].values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
-    testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
+    temp_train = df.loc[train_index,:]
+    temp_test = df.loc[test_index,:]
+    del df
+    X = hstack([csr_matrix(temp_train.values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
+    testing = hstack([csr_matrix(temp_test.values),ready_df[train_index.shape[0]:]])
     tfvocab = df.columns.tolist() + tfvocab
-    del ready_df, vectorizer
+    del ready_df
     gc.collect();
 else:
     gc.collect();
@@ -989,11 +1019,13 @@ print("Light Gradient Boosting Regressor")
 lgbm_params =  {
     'task': 'train',
     'boosting_type': 'gbdt',
-    'objective': 'regression',
+    # 'objective': 'regression',
+    # 'objective':'binary'
     # 'objective': 'poisson',
+    'objective': objective
     'metric': 'rmse',
     # 'max_depth': 15,
-    'num_leaves':300,
+    'num_leaves':400,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
