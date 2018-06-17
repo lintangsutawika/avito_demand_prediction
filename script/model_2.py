@@ -998,6 +998,15 @@ if args.tfidf == "True":
     tfvocab = vectorizer.get_feature_names()
     del vectorizer
     gc.collect();
+
+
+##############################################################################################################
+print("Use Binary")
+##############################################################################################################
+binary_pred = pd.read_csv("binary.csv", index_col='item_id').astype(float)
+binary_pred.rename(index=str, columns={"deal_probability"  :"binary"}, inplace=True)
+df = pd.concat([df,binary_pred], axis=1)
+
 ##############################################################################################################
 print("Build Dataset")
 ##############################################################################################################
