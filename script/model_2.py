@@ -1022,7 +1022,7 @@ lgbm_params =  {
     # 'objective': 'regression',
     # 'objective':'binary'
     # 'objective': 'poisson',
-    'objective': objective
+    'objective': objective,
     'metric': 'rmse',
     # 'max_depth': 15,
     'num_leaves':400,
