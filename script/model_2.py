@@ -153,6 +153,8 @@ if args.image == 'True':
     image_confidence = pd.concat([image_confidence_train,image_confidence_test],axis=0)
     df = df.merge(image_confidence, on='image', how='left')
     df['image_confidence'].fillna(-1, inplace=True)
+    del image_confidence_train, image_confidence_test
+    gc.collect()
 
 df.drop(["image"],axis=1,inplace=True)
 
@@ -166,6 +168,8 @@ if args.agg_feat == 'True':
     df = df.merge(aggregated_features, on='user_id', how='left')
     df["avg_days_up_user"].fillna(-1, inplace=True)
     df["avg_times_up_user"].fillna(-1, inplace=True)
+    del aggregated_features
+    gc.collect()
 
 df.set_index('item_id', inplace=True)
 training.set_index('item_id', inplace=True)
@@ -199,6 +203,8 @@ if args.compare == 'True':
         # neg_title = pd.read_csv("neg_title.csv", index_col='item_id')
         df = pd.concat([df,pos_title], axis=1)
         # df = pd.concat([df,neg_title], axis=1)
+        del pos_title
+        gc.collect()
 
 if args.deal == 'True':
     ##############################################################################################################
@@ -267,6 +273,8 @@ if args.deal == 'True':
                                     "max"   :"max_deal_by_parent_category_name_user_type"},
                             inplace=True)
     df = df.join(temp, on=['parent_category_name','user_type'])
+    del temp
+    gc.collect()
     df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['min_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
@@ -286,6 +294,8 @@ if args.deal == 'True':
                                     "max"   :"max_deal_by_parent_category_name_times_up_bin"},
                             inplace=True)
     df = df.join(temp, on=['parent_category_name','times_up_bin'])
+    del temp
+    gc.collect()
     df['avg_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
     df['std_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
     df['min_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
@@ -305,6 +315,8 @@ if args.deal == 'True':
                                     "max"   :"max_deal_by_parent_category_name_days_up_bin"},
                             inplace=True)
     df = df.join(temp, on=['parent_category_name','days_up_bin'])
+    del temp
+    gc.collect()
     df['avg_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
     df['std_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
     df['min_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
@@ -496,6 +508,8 @@ if args.cat2vec == 'True':
     temp =pd.DataFrame(apply_w2v(gen_cat2vec_sentences(df.loc[:,cat_cols]), c2v_model, n_cat2vec_feature), 
                         columns=["cat2vec_"+element for element in cat_cols], index=df.index)
     df = pd.concat([df,temp], axis=1)
+    del temp
+    gc.collect()
 
 if args.text == 'True':
     ##############################################################################################################
@@ -951,14 +965,17 @@ if args.sparse == "True":
     testing = hstack([csr_matrix(df.loc[test_index,:].values),ready_df[train_index.shape[0]:]])
     tfvocab = df.columns.tolist() + tfvocab
     del ready_df, vectorizer
-    gc.collect()
+    gc.collect();
 else:
-    X = df.loc[train_index,:].values
-    testing = df.loc[test_index,:].values
+    gc.collect();
     tfvocab = df.columns.tolist()
-
+    X = df.loc[train_index,:]
+    testing = df.loc[test_index,:]
+    del df #Make room for more memory
+    X = X.values 
+    testing = testing.values
 del training
-gc.collect()
+gc.collect();
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
