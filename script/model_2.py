@@ -111,8 +111,10 @@ if args.binary == "True":
     training['deal_probability'][training['deal_probability'] <= 0.05] = 0    
     training['deal_probability'][training['deal_probability'] > 0.05] = 1
     objective = 'binary'
+    metric = 'binary_logloss'
 else:
     objective = 'regression'
+    metric = 'rmse'
 
 y = training['deal_probability']
 df_train = training.copy()
@@ -291,6 +293,27 @@ if args.deal == 'True':
     df['med_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['q3_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['max_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+
+    temp = df_train.groupby(['region','user_type'])['deal_probability'].describe()
+    temp.drop('count',axis=1, inplace=True)
+    temp.rename(index=str, columns={"mean"  :"avg_deal_by_region_user_type", 
+                                    "std"   :"std_deal_by_region_user_type", 
+                                    "min"   :"min_deal_by_region_user_type", 
+                                    "25%"   :"q1_deal_by_region_user_type", 
+                                    "50%"   :"med_deal_by_region_user_type", 
+                                    "75%"   :"q3_deal_by_region_user_type", 
+                                    "max"   :"max_deal_by_region_user_type"},
+                            inplace=True)
+    df = df.join(temp, on=['region','user_type'])
+    del temp
+    gc.collect()
+    df['avg_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['std_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['min_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['q1_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['med_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['q3_deal_by_region_user_type'].fillna(-1, inplace=True)
+    df['max_deal_by_region_user_type'].fillna(-1, inplace=True)
 
     temp = df.loc[train_index,:].groupby(['parent_category_name','times_up_bin'])['deal_probability'].describe()
     temp.drop('count',axis=1, inplace=True)
@@ -1023,7 +1046,9 @@ lgbm_params =  {
     # 'objective':'binary'
     # 'objective': 'poisson',
     'objective': objective,
-    'metric': 'rmse',
+    # 'metric': 'rmse',
+    # 'metric': 'binary_logloss',
+    'metric': metric,
     # 'max_depth': 15,
     'num_leaves':400,
     'feature_fraction': 0.5,
