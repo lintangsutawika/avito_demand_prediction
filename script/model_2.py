@@ -220,50 +220,41 @@ if args.deal == 'True':
     df['q3_deal_by_item_seq_number'].fillna(-1, inplace=True)
     df['max_deal_by_item_seq_number'].fillna(-1, inplace=True)
 
-    df['avg_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('mean'))
-    df['std_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('std'))
-    df['min_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('min'))
-    df['q1_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.25))
-    df['med_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.5))
-    df['q3_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.75))
-    df['max_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('max'))
-    df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['min_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['q1_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['med_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['q3_deal_by_item_seq_number'].fillna(-1, inplace=True)
-    df['max_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    bins = np.linspace(min(df.avg_days_up_user.values)-1,max(df.avg_days_up_user.values),20).astype(float)
+    bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
+    df['days_up_bin'] = pd.cut(df.avg_days_up_user,bins, labels=bin_label).astype('category')
+    df['avg_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['mean'])
+    df['std_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['std'])
+    df['min_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['min'])
+    df['q1_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['quantile',q=0.25])
+    df['med_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['quantile',q=0.5])
+    df['q3_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['quantile',q=0.75])
+    df['max_deal_by_days_up_bin'] = df['days_up_bin'].map(df.loc[train_index,['days_up_bin','deal_probability']].groupby(['days_up_bin'])['deal_probability'].describe()['max'])
+    df['avg_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['std_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['min_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['q1_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['med_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['q3_deal_by_days_up_bin'].fillna(-1, inplace=True)
+    df['max_deal_by_days_up_bin'].fillna(-1, inplace=True)
 
-    df['avg_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('mean'))
-    df['std_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('std'))
-    df['min_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('min'))
-    df['q1_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.25))
-    df['med_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.5))
-    df['q3_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.75))
-    df['max_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('max'))
-    df['avg_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['std_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['min_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['q1_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['med_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['q3_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-    df['max_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
-
-    df['avg_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('mean'))
-    df['std_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('std'))
-    df['min_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('min'))
-    df['q1_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.25))
-    df['med_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.5))
-    df['q3_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.75))
-    df['max_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('max'))
-    df['avg_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['std_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['min_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['q1_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['med_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['q3_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
-    df['max_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    bins = np.linspace(min(df.avg_times_up_user.values),max(df.avg_times_up_user.values),int(max(df.avg_times_up_user.values)/1.0)).astype(int)
+    bin_label = ['bin_'+str(i) for i in range(len(bins)-1)]
+    df['times_up_bin'] = pd.cut(df.avg_times_up_user,bins, labels=bin_label).astype('category')
+    df['avg_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['mean'])
+    df['std_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['std'])
+    df['min_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['min'])
+    df['q1_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['quantile',q=0.25])
+    df['med_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['quantile',q=0.5])
+    df['q3_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['quantile',q=0.75])
+    df['max_deal_by_times_up_bin'] = df['times_up_bin'].map(df.loc[train_index,:].groupby(['times_up_bin'])['deal_probability'].describe()['max'])
+    df['avg_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['std_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['min_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['q1_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['med_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['q3_deal_by_times_up_bin'].fillna(-1, inplace=True)
+    df['max_deal_by_times_up_bin'].fillna(-1, inplace=True)
 
     temp = df_train.groupby(['parent_category_name','user_type'])['deal_probability'].describe()
     temp.drop('count',axis=1, inplace=True)
@@ -284,24 +275,43 @@ if args.deal == 'True':
     df['q3_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['max_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
 
-    temp = df.loc[train_index,:].groupby(['parent_category_name','avg_times_up_user'])['deal_probability'].describe()
+    temp = df.loc[train_index,:].groupby(['parent_category_name','times_up_bin'])['deal_probability'].describe()
     temp.drop('count',axis=1, inplace=True)
-    temp.rename(index=str, columns={"mean"  :"avg_deal_by_parent_category_name_avg_times_up_user", 
-                                    "std"   :"std_deal_by_parent_category_name_avg_times_up_user", 
-                                    "min"   :"min_deal_by_parent_category_name_avg_times_up_user", 
-                                    "25%"   :"q1_deal_by_parent_category_name_avg_times_up_user", 
-                                    "50%"   :"med_deal_by_parent_category_name_avg_times_up_user", 
-                                    "75%"   :"q3_deal_by_parent_category_name_avg_times_up_user", 
-                                    "max"   :"max_deal_by_parent_category_name_avg_times_up_user"},
+    temp.rename(index=str, columns={"mean"  :"avg_deal_by_parent_category_name_times_up_bin", 
+                                    "std"   :"std_deal_by_parent_category_name_times_up_bin", 
+                                    "min"   :"min_deal_by_parent_category_name_times_up_bin", 
+                                    "25%"   :"q1_deal_by_parent_category_name_times_up_bin", 
+                                    "50%"   :"med_deal_by_parent_category_name_times_up_bin", 
+                                    "75%"   :"q3_deal_by_parent_category_name_times_up_bin", 
+                                    "max"   :"max_deal_by_parent_category_name_times_up_bin"},
                             inplace=True)
-    df = df.join(temp, on=['parent_category_name','avg_times_up_user'])
-    df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['min_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['q1_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['med_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['q3_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
-    df['max_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df = df.join(temp, on=['parent_category_name','times_up_bin'])
+    df['avg_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['std_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['min_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['q1_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['med_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['q3_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+    df['max_deal_by_parent_category_name_times_up_bin'].fillna(-1, inplace=True)
+
+    temp = df.loc[train_index,:].groupby(['parent_category_name','days_up_bin'])['deal_probability'].describe()
+    temp.drop('count',axis=1, inplace=True)
+    temp.rename(index=str, columns={"mean"  :"avg_deal_by_parent_category_name_days_up_bin", 
+                                    "std"   :"std_deal_by_parent_category_name_days_up_bin", 
+                                    "min"   :"min_deal_by_parent_category_name_days_up_bin", 
+                                    "25%"   :"q1_deal_by_parent_category_name_days_up_bin", 
+                                    "50%"   :"med_deal_by_parent_category_name_days_up_bin", 
+                                    "75%"   :"q3_deal_by_parent_category_name_days_up_bin", 
+                                    "max"   :"max_deal_by_parent_category_name_days_up_bin"},
+                            inplace=True)
+    df = df.join(temp, on=['parent_category_name','days_up_bin'])
+    df['avg_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['std_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['min_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['q1_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['med_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['q3_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
+    df['max_deal_by_parent_category_name_days_up_bin'].fillna(-1, inplace=True)
 
     df['avg_deal_by_image_top_1'] = df['image_top_1'].map(df_train.groupby(['image_top_1'])['deal_probability'].transform('mean'))
     df['std_deal_by_image_top_1'] = df['image_top_1'].map(df_train.groupby(['image_top_1'])['deal_probability'].transform('std'))
@@ -526,6 +536,15 @@ if args.mean == "True":
     print("Statistical Encoding for Categorical Features")
     ############################################################################################################## 
     
+    df['avg_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('mean')
+    df['std_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('std')
+    df['var_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('var')
+    df['min_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('min')
+    df['q1_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('quantile',q=0.25)
+    df['med_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('quantile',q=0.5)
+    df['q3_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('quantile',q=0.75)
+    df['max_avg_times_up_user_by_region'] = df.groupby(['region'])['avg_times_up_user'].transform('max')
+
     df['avg_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('mean')
     df['std_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('std')
     df['var_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('var')
