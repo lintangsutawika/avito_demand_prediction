@@ -989,8 +989,8 @@ print("Light Gradient Boosting Regressor")
 lgbm_params =  {
     'task': 'train',
     'boosting_type': 'gbdt',
-    # 'objective': 'regression',
-    'objective': 'poisson',
+    'objective': 'regression',
+    # 'objective': 'poisson',
     'metric': 'rmse',
     # 'max_depth': 15,
     'num_leaves':300,
