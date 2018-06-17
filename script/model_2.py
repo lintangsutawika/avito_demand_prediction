@@ -998,7 +998,7 @@ lgbm_params =  {
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
     'bagging_freq': 100,
-    'learning_rate': 0.01,
+    'learning_rate': 0.005,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
