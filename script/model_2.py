@@ -207,8 +207,63 @@ if args.deal == 'True':
     # bins of deal probability
     df['avg_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('mean'))
     df['std_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('std'))
+    df['min_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('min'))
+    df['q1_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.25))
+    df['med_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.5))
+    df['q3_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.75))
+    df['max_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('max')
     df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['min_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['q1_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['med_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['q3_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['max_deal_by_item_seq_number'].fillna(-1, inplace=True)
+
+    df['avg_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('mean'))
+    df['std_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('std'))
+    df['min_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('min'))
+    df['q1_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.25))
+    df['med_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.5))
+    df['q3_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('quantile',q=0.75))
+    df['max_deal_by_item_seq_number'] = df['item_seq_number'].map(df_train.groupby(['item_seq_number'])['deal_probability'].transform('max')
+    df['avg_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['std_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['min_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['q1_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['med_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['q3_deal_by_item_seq_number'].fillna(-1, inplace=True)
+    df['max_deal_by_item_seq_number'].fillna(-1, inplace=True)
+
+    df['avg_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('mean'))
+    df['std_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('std'))
+    df['min_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('min'))
+    df['q1_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.25))
+    df['med_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.5))
+    df['q3_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('quantile',q=0.75))
+    df['max_deal_by_avg_days_up_user'] = df['avg_days_up_user'].map(df.loc[train_index,:].groupby(['avg_days_up_user'])['deal_probability'].transform('max')
+    df['avg_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['std_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['min_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['q1_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['med_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['q3_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+    df['max_deal_by_avg_days_up_user'].fillna(-1, inplace=True)
+
+    df['avg_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('mean'))
+    df['std_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('std'))
+    df['min_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('min'))
+    df['q1_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.25))
+    df['med_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.5))
+    df['q3_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('quantile',q=0.75))
+    df['max_deal_by_avg_times_up_user'] = df['avg_times_up_user'].map(df.loc[train_index,:].groupby(['avg_times_up_user'])['deal_probability'].transform('max')
+    df['avg_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['std_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['min_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['q1_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['med_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['q3_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
+    df['max_deal_by_avg_times_up_user'].fillna(-1, inplace=True)
 
     temp = df_train.groupby(['parent_category_name','user_type'])['deal_probability'].describe()
     temp.drop('count',axis=1, inplace=True)
@@ -221,6 +276,25 @@ if args.deal == 'True':
                                     "max"   :"max_deal_by_parent_category_name_user_type"},
                             inplace=True)
     df = df.join(temp, on=['parent_category_name','user_type'])
+    df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['min_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['q1_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['med_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['q3_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+    df['max_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
+
+    temp = df.loc[train_index,:].groupby(['parent_category_name','avg_times_up_user'])['deal_probability'].describe()
+    temp.drop('count',axis=1, inplace=True)
+    temp.rename(index=str, columns={"mean"  :"avg_deal_by_parent_category_name_avg_times_up_user", 
+                                    "std"   :"std_deal_by_parent_category_name_avg_times_up_user", 
+                                    "min"   :"min_deal_by_parent_category_name_avg_times_up_user", 
+                                    "25%"   :"q1_deal_by_parent_category_name_avg_times_up_user", 
+                                    "50%"   :"med_deal_by_parent_category_name_avg_times_up_user", 
+                                    "75%"   :"q3_deal_by_parent_category_name_avg_times_up_user", 
+                                    "max"   :"max_deal_by_parent_category_name_avg_times_up_user"},
+                            inplace=True)
+    df = df.join(temp, on=['parent_category_name','avg_times_up_user'])
     df['avg_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['std_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
     df['min_deal_by_parent_category_name_user_type'].fillna(-1, inplace=True)
@@ -451,6 +525,43 @@ if args.mean == "True":
     ##############################################################################################################
     print("Statistical Encoding for Categorical Features")
     ############################################################################################################## 
+    
+    df['avg_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('mean')
+    df['std_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('std')
+    df['var_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('var')
+    df['min_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('min')
+    df['q1_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('quantile',q=0.25)
+    df['med_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('quantile',q=0.5)
+    df['q3_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('quantile',q=0.75)
+    df['max_price_by_avg_times_up_user'] = df.groupby(['avg_times_up_user'])['price'].transform('max')
+    
+    df['avg_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('mean')
+    df['std_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('std')
+    df['var_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('var')
+    df['min_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('min')
+    df['q1_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('quantile',q=0.25)
+    df['med_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('quantile',q=0.5)
+    df['q3_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('quantile',q=0.75)
+    df['max_price_by_parent_category_name_avg_times_up_user'] = df.groupby(['parent_category_name','avg_times_up_user'])['price'].transform('max')
+
+    df['avg_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('mean')
+    df['std_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('std')
+    df['var_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('var')
+    df['min_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('min')
+    df['q1_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('quantile',q=0.25)
+    df['med_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('quantile',q=0.5)
+    df['q3_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('quantile',q=0.75)
+    df['max_price_by_avg_days_up_user'] = df.groupby(['avg_days_up_user'])['price'].transform('max')
+    
+    df['avg_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('mean')
+    df['std_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('std')
+    df['var_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('var')
+    df['min_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('min')
+    df['q1_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('quantile',q=0.25)
+    df['med_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('quantile',q=0.5)
+    df['q3_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('quantile',q=0.75)
+    df['max_price_by_parent_category_name_avg_days_up_user'] = df.groupby(['parent_category_name','avg_days_up_user'])['price'].transform('max')
+
     df['avg_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('mean')
     df['std_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('std')
     df['var_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('var')
@@ -459,6 +570,7 @@ if args.mean == "True":
     df['med_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('quantile',q=0.75)
     df['max_price_by_parent_category_name_user_type'] = df.groupby(['parent_category_name','user_type'])['price'].transform('max')
+
     df['avg_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('mean')
     df['std_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('std')
     df['var_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('var')
@@ -467,6 +579,7 @@ if args.mean == "True":
     df['med_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('quantile',q=0.75)
     df['max_price_by_item_seq_number'] = df.groupby(['item_seq_number'])['price'].transform('max')
+
     df['avg_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('mean')
     df['std_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('std')
     df['var_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('var')
@@ -475,6 +588,7 @@ if args.mean == "True":
     df['med_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('quantile',q=0.75)
     df['max_price_by_title_num_char'] = df.groupby(['title_num_char'])['price'].transform('max')
+
     df['avg_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('mean')
     df['std_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('std')
     df['var_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('var')
@@ -483,6 +597,7 @@ if args.mean == "True":
     df['med_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_param_1'] = df.groupby(['param_1'])['price'].transform('max')
+
     df['avg_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('mean')
     df['std_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('std')
     df['var_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('var')
@@ -491,6 +606,7 @@ if args.mean == "True":
     df['med_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_region_day_of_week'] = df.groupby(['region','day_of_week'])['price'].transform('max')
+
     df['avg_price_by_city'] = df.groupby(['city'])['price'].transform('mean')
     df['std_price_by_city'] = df.groupby(['city'])['price'].transform('std')
     df['var_price_by_city'] = df.groupby(['city'])['price'].transform('var')
@@ -499,6 +615,7 @@ if args.mean == "True":
     df['med_price_by_city'] = df.groupby(['city'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city'] = df.groupby(['city'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city'] = df.groupby(['city'])['price'].transform('max')
+
     df['avg_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('mean')
     df['std_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('std')
     df['var_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('var')
@@ -507,6 +624,7 @@ if args.mean == "True":
     df['med_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_param_1'] = df.groupby(['city','param_1'])['price'].transform('max')
+
     df['avg_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('mean')
     df['std_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('std')
     df['var_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('var')
@@ -515,6 +633,7 @@ if args.mean == "True":
     df['med_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_image_top_1'] = df.groupby(['city','image_top_1'])['price'].transform('max')
+
     df['avg_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('std')
     df['var_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('var')
@@ -523,6 +642,7 @@ if args.mean == "True":
     df['med_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_image_top_1_day_of_week'] = df.groupby(['city','image_top_1','day_of_week'])['price'].transform('max')
+
     df['avg_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('mean')
     df['std_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('std')
     df['var_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('var')
@@ -531,6 +651,7 @@ if args.mean == "True":
     df['med_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_category_name'] = df.groupby(['city','category_name'])['price'].transform('max')
+
     df['avg_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('mean')
     df['std_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('std')
     df['var_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('var')
@@ -539,6 +660,7 @@ if args.mean == "True":
     df['med_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('quantile',q=0.5)
     df['q3_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('quantile',q=0.75)
     df['max_price_by_city_category_name_day_of_week'] = df.groupby(['city','category_name','day_of_week'])['price'].transform('max')
+
     df['avg_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('mean')
     df['std_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('std')
     df['var_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('var')
@@ -547,6 +669,7 @@ if args.mean == "True":
     df['med_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('quantile',q=0.5)
     df['q3_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('quantile',q=0.75)
     df['max_image_top_1_by_city'] = df.groupby(['city'])['image_top_1'].transform('max')
+
     df['avg_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('mean')
     df['std_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('std')
     df['var_image_top_1_by_city_user_type'] = df.groupby(['city','user_type'])['image_top_1'].transform('var')
