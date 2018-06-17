@@ -367,7 +367,7 @@ if args.deal == 'True':
     df['avg_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
 
-    categorical = categorical + ['item_bin','price_range']
+    categorical = categorical + ['item_bin','price_range','days_up_bin','times_up_bin']
 
 if args.categorical == "True":    
     ##############################################################################################################
