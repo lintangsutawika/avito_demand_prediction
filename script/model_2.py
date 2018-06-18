@@ -1003,9 +1003,9 @@ if args.tfidf == "True":
 ##############################################################################################################
 print("Use Binary")
 ##############################################################################################################
-binary_pred = pd.read_csv("binary.csv", index_col='item_id').astype(float)
-binary_pred.rename(index=str, columns={"deal_probability"  :"binary"}, inplace=True)
-df = pd.concat([df,binary_pred], axis=1)
+binary_pred_train = pd.read_csv("binary_probability_train.csv", index_col='item_id').astype(float)
+binary_pred_test = pd.read_csv("binary_probability_test.csv", index_col='item_id').astype(float)
+df = pd.concat([df,pd.concat([binary_pred_train['binary_probability'],binary_pred_test['binary_probability']],axis=0)], axis=1)
 
 ##############################################################################################################
 print("Build Dataset")
@@ -1097,6 +1097,7 @@ for train, valid in kf_.split(X):
     )
 
     model.save_model('model_{}.txt'.format(i));i += 1
+    prediction = model.predict(X[valid])
     validation_score = np.sqrt(metrics.mean_squared_error(y[valid], model.predict(X[valid])))
     print('Fold {}, RMSE: {}'.format(i,validation_score))
     cv_score += validation_score
