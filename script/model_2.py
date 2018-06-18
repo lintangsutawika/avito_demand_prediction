@@ -1022,10 +1022,10 @@ if args.build_features == "True":
 if args.sparse == "True":
     temp_train = df.loc[train_index,:]
     temp_test = df.loc[test_index,:]
+    tfvocab = df.columns.tolist() + tfvocab
     del df
     X = hstack([csr_matrix(temp_train.values),ready_df[0:train_index.shape[0]]]) # Sparse Matrix
     testing = hstack([csr_matrix(temp_test.values),ready_df[train_index.shape[0]:]])
-    tfvocab = df.columns.tolist() + tfvocab
     del ready_df
     gc.collect();
 else:
