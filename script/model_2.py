@@ -1001,11 +1001,11 @@ if args.tfidf == "True":
 
 
 ##############################################################################################################
-print("Use Binary")
+# print("Use Binary")
 ##############################################################################################################
-binary_pred_train = pd.read_csv("binary_probability_train.csv", index_col='item_id').astype(float)
-binary_pred_test = pd.read_csv("binary_probability_test.csv", index_col='item_id').astype(float)
-df = pd.concat([df,pd.concat([binary_pred_train['binary_probability'],binary_pred_test['binary_probability']],axis=0)], axis=1)
+# binary_pred_train = pd.read_csv("binary_probability_train.csv", index_col='item_id').astype(float)
+# binary_pred_test = pd.read_csv("binary_probability_test.csv", index_col='item_id').astype(float)
+# df = pd.concat([df,pd.concat([binary_pred_train['binary_probability'],binary_pred_test['binary_probability']],axis=0)], axis=1)
 
 ##############################################################################################################
 print("Build Dataset")
@@ -1016,8 +1016,6 @@ df.drop(['title_num_emoji','title_emoji_vs_char','title_words_vs_unique','descri
         'title_num_punctuations','var_price_by_param_1','title_num_unique_words'],axis=1, inplace=True)
 
 df.drop(textfeats+["user_id"]+["deal_probability"],axis=1, inplace=True)
-if args.build_features == "True":
-    sys.exit(1)
 
 if args.sparse == "True":
     temp_train = df.loc[train_index,:]
@@ -1039,10 +1037,17 @@ else:
 del training
 gc.collect();
 
+feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
+index_list = list(feat.index)
+X = X[:,index_list]
+testing = testing[:,index_list]
+
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
 print("Feature Names Length: {}".format(len(tfvocab)))
 
+if args.build_features == "True":
+    sys.exit(1)
 ##############################################################################################################
 print("Modeling Stage")
 ##############################################################################################################
