@@ -1064,7 +1064,7 @@ lgbm_params =  {
     # 'metric': 'binary_logloss',
     'metric': metric,
     # 'max_depth': 15,
-    'num_leaves':450,
+    'num_leaves':500,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
