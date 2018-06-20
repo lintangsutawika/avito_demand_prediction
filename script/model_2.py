@@ -1037,6 +1037,10 @@ else:
 del training
 gc.collect();
 
+
+if args.build_features == "True":
+    sys.exit(1)
+    
 feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
 index_list = list(feat.index)
 X = X[:,index_list]
@@ -1046,8 +1050,6 @@ for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
 print("Feature Names Length: {}".format(len(tfvocab)))
 
-if args.build_features == "True":
-    sys.exit(1)
 ##############################################################################################################
 print("Modeling Stage")
 ##############################################################################################################
