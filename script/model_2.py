@@ -72,6 +72,7 @@ parser.add_argument('--compare', default=False)
 parser.add_argument('--tfidf', default=False)
 parser.add_argument('--test', default=False)
 parser.add_argument('--binary', default=False)
+parser.add_argument('--xentropy', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -97,6 +98,7 @@ print("compare: {}".format(args.compare))
 print("tfidf: {}".format(args.tfidf))
 print("test: {}".format(args.test))
 print("binary: {}".format(args.binary))
+print("xentropy: {}".format(args.xentropy))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -112,6 +114,9 @@ if args.binary == "True":
     training['deal_probability'][training['deal_probability'] > 0.05] = 1
     objective = 'binary'
     metric = 'binary_logloss'
+elif args.xentropy == "True":
+    objective = 'xentropy'
+    metric = 'rmse'
 else:
     objective = 'regression'
     metric = 'rmse'
@@ -1026,6 +1031,11 @@ if args.sparse == "True":
     testing = hstack([csr_matrix(temp_test.values),ready_df[train_index.shape[0]:]])
     del ready_df
     gc.collect();
+    feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
+    index_list = list(feat.index)
+    tfvocab = list(feat.feature.values)
+    X = X.tocsr()[:,index_list]
+    testing = testing.tocsr()[:,index_list]
 else:
     gc.collect();
     tfvocab = df.columns.tolist()
@@ -1040,11 +1050,6 @@ gc.collect();
 
 if args.build_features == "True":
     sys.exit(1)
-    
-feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
-index_list = list(feat.index)
-X = X[:,index_list]
-testing = testing[:,index_list]
 
 for shape in [X,testing]:
     print("{} Rows and {} Cols".format(*shape.shape))
@@ -1084,8 +1089,8 @@ models = []
 temp_prediction = []
 kf_ = KFOLD(n_splits=nFolds, shuffle=True, random_state=SEED)
 for train, valid in kf_.split(X):
-    if issparse(X):
-        X = X.tocsr()
+    # if issparse(X):
+        # X = X.tocsr()
     lgbtrain = lgb.Dataset(X[train], y[train],
                     feature_name=tfvocab,
                     categorical_feature = categorical)
@@ -1128,6 +1133,7 @@ model_prediction = model_prediction/len(models)
 
 model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
 model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
+model_submission.round(5)
 model_submission.to_csv("submission.csv",index=True,header=True)
 # print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
