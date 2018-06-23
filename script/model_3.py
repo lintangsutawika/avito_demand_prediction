@@ -191,23 +191,14 @@ if target == 'param_1':
     df.set_index('item_id', inplace=True)
     train_index = df.param_1.notnull().index
     test_index = df.param_1.isnull().index
-    y = df.param_1[train_index]
-    df.drop(['param_1'],axis=1,inplace=True)
-    categorical.remove('param_1')
 elif target == 'param_2':
     df.set_index('item_id', inplace=True)
     train_index = df.param_2.notnull().index
     test_index = df.param_2.isnull().index
-    y = df.param_2[train_index]
-    df.drop(['param_2'],axis=1,inplace=True)
-    categorical.remove('param_2')
 elif target == 'param_3':
     df.set_index('item_id', inplace=True)
     train_index = df.param_3.notnull().index
     test_index = df.param_3.isnull().index
-    y = df.param_3[train_index]
-    df.drop(['param_3'],axis=1,inplace=True)
-    categorical.remove('param_3')
 
 if args.categorical == "True":    
     ##############################################################################################################
@@ -225,6 +216,19 @@ if args.categorical == "True":
 else:
     df.drop(categorical,axis=1, inplace=True)
     categorical = ""
+
+if target == 'param_1':
+    y = df.param_1[train_index]
+    df.drop(['param_1'],axis=1,inplace=True)
+    categorical.remove('param_1')
+elif target == 'param_2':
+    y = df.param_2[train_index]
+    df.drop(['param_2'],axis=1,inplace=True)
+    categorical.remove('param_2')
+elif target == 'param_3':
+    y = df.param_3[train_index]
+    df.drop(['param_3'],axis=1,inplace=True)
+    categorical.remove('param_3')
 
 if args.compare == 'True':
     if "pos_title.csv" not in os.listdir("."):
