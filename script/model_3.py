@@ -185,24 +185,6 @@ if args.agg_feat == 'True':
     del aggregated_features
     gc.collect()
 
-if args.categorical == "True":    
-    ##############################################################################################################
-    print("Regular Encoding for Categorical Features")
-    ##############################################################################################################
-    # print("Start Label Encoding")
-    # Encoder:
-    lbl = preprocessing.LabelEncoder()
-    for col in categorical:
-        try:
-            df[col].fillna('Unknown')
-        except:
-            pass
-        df[col] = lbl.fit_transform(df[col].astype(str))
-else:
-    df.drop(categorical,axis=1, inplace=True)
-    categorical = ""
-
-
 target = 'param_1'
 
 if target == 'param_1':
@@ -226,6 +208,23 @@ elif target == 'param_3':
     y = df.param_3[train_index]
     df.drop(['param_3'],axis=1,inplace=True)
     categorical.remove('param_3')
+
+if args.categorical == "True":    
+    ##############################################################################################################
+    print("Regular Encoding for Categorical Features")
+    ##############################################################################################################
+    # print("Start Label Encoding")
+    # Encoder:
+    lbl = preprocessing.LabelEncoder()
+    for col in categorical:
+        try:
+            df[col].fillna('Unknown')
+        except:
+            pass
+        df[col] = lbl.fit_transform(df[col].astype(str))
+else:
+    df.drop(categorical,axis=1, inplace=True)
+    categorical = ""
 
 if args.compare == 'True':
     if "pos_title.csv" not in os.listdir("."):
@@ -1053,6 +1052,7 @@ lgbm_params =  {
     # 'metric': 'rmse',
     # 'metric': 'binary_logloss',
     'metric': metric,
+    'num_class':len(np.unique(y)),
     # 'max_depth': 15,
     'num_leaves':500,
     'feature_fraction': 0.5,
