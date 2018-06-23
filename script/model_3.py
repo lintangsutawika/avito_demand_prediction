@@ -189,16 +189,16 @@ target = 'param_1'
 
 if target == 'param_1':
     df.set_index('item_id', inplace=True)
-    train_index = df.param_1.notnull().index
-    test_index = df.param_1.isnull().index
+    train_index = df[df.param_1.notnull()].index
+    test_index = df[df.param_1.isnull()].index
 elif target == 'param_2':
     df.set_index('item_id', inplace=True)
-    train_index = df.param_2.notnull().index
-    test_index = df.param_2.isnull().index
+    train_index = df[df.param_2.notnull()].index
+    test_index = df[df.param_2.isnull()].index
 elif target == 'param_3':
     df.set_index('item_id', inplace=True)
-    train_index = df.param_3.notnull().index
-    test_index = df.param_3.isnull().index
+    train_index = df[df.param_3.notnull()].index
+    test_index = df[df.param_3.isnull()].index
 
 if args.categorical == "True":    
     ##############################################################################################################
@@ -1058,12 +1058,12 @@ lgbm_params =  {
     'metric': metric,
     'num_class':len(np.unique(y)),
     # 'max_depth': 15,
-    'num_leaves':500,
+    'num_leaves':100,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
-    'bagging_freq': 100,
-    'learning_rate': 0.01,
+    'bagging_freq': 10,
+    'learning_rate': 0.0001,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
