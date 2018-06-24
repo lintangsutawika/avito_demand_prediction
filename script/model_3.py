@@ -231,7 +231,7 @@ te_cats = [cat+"_te_price_full" for cat in f_cats]
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
                               keep_original=True, cols=f_cats)
 training, testing = target_encode.encode("_te_price_full", training, testing, df['price_full'].iloc[:ntrain])
-df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
+df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
 
 te_cats = [cat+"_te_deal" for cat in f_cats]
 target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
