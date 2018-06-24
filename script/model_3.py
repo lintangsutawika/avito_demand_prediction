@@ -150,20 +150,6 @@ for col in categorical:
         pass
     df[col] = lbl.fit_transform(df[col].astype(str))
 
-
-if target == 'param_1':
-    y = df.param_1[train_index]
-    df.drop(['param_1'],axis=1,inplace=True)
-    categorical.remove('param_1')
-elif target == 'param_2':
-    y = df.param_2[train_index]
-    df.drop(['param_2'],axis=1,inplace=True)
-    categorical.remove('param_2')
-elif target == 'param_3':
-    y = df.param_3[train_index]
-    df.drop(['param_3'],axis=1,inplace=True)
-    categorical.remove('param_3')
-
 ##############################################################################################################
 print("Target Encoding for Categorical Features")
 ##############################################################################################################
@@ -233,11 +219,37 @@ target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.
 training, testing = target_encode.encode("_te_price_full", training, testing, df['price_full'].iloc[:ntrain])
 df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
 
-te_cats = [cat+"_te_deal" for cat in f_cats]
-target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
-                              keep_original=True, cols=f_cats)
-training, testing = target_encode.encode("_te_deal", training, testing, df['deal_probability'].iloc[:ntrain])
-df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
+if target == 'param_1':
+    te_cats = [cat+"_te_param_1" for cat in f_cats]  
+    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                                  keep_original=True, cols=f_cats)
+    training, testing = target_encode.encode("_te_param_1", training, testing, df['param_1'].iloc[:ntrain])
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
+elif target == 'param_2':
+    te_cats = [cat+"_te_param_2" for cat in f_cats]  
+    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                                  keep_original=True, cols=f_cats)
+    training, testing = target_encode.encode("_te_param_2", training, testing, df['param_2'].iloc[:ntrain])
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
+elif target == 'param_3':
+    te_cats = [cat+"_te_param_3" for cat in f_cats]  
+    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
+                                  keep_original=True, cols=f_cats)
+    training, testing = target_encode.encode("_te_param_3", training, testing, df['param_3'].iloc[:ntrain])
+    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
+
+if target == 'param_1':
+    y = df.param_1[train_index]
+    df.drop(['param_1'],axis=1,inplace=True)
+    categorical.remove('param_1')
+elif target == 'param_2':
+    y = df.param_2[train_index]
+    df.drop(['param_2'],axis=1,inplace=True)
+    categorical.remove('param_2')
+elif target == 'param_3':
+    y = df.param_3[train_index]
+    df.drop(['param_3'],axis=1,inplace=True)
+    categorical.remove('param_3')
 
 ##############################################################################################################
 print("Cat2Vec Encoding for Categorical Features")
