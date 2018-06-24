@@ -220,25 +220,6 @@ training, testing = target_encode.encode("_te_price_full", training, testing, df
 df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
 
 if target == 'param_1':
-    te_cats = [cat+"_te_param_1" for cat in f_cats]  
-    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
-                                  keep_original=True, cols=f_cats)
-    training, testing = target_encode.encode("_te_param_1", training, testing, df['param_1'].iloc[:ntrain])
-    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
-elif target == 'param_2':
-    te_cats = [cat+"_te_param_2" for cat in f_cats]  
-    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
-                                  keep_original=True, cols=f_cats)
-    training, testing = target_encode.encode("_te_param_2", training, testing, df['param_2'].iloc[:ntrain])
-    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
-elif target == 'param_3':
-    te_cats = [cat+"_te_param_3" for cat in f_cats]  
-    target_encode = TargetEncoder(min_samples_leaf=100, smoothing=10, noise_level=0.01,
-                                  keep_original=True, cols=f_cats)
-    training, testing = target_encode.encode("_te_param_3", training, testing, df['param_3'].iloc[:ntrain])
-    df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0).set_index(df.index)], axis=1)
-
-if target == 'param_1':
     y = df.param_1[train_index]
     df.drop(['param_1'],axis=1,inplace=True)
     categorical.remove('param_1')
