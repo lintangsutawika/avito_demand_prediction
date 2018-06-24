@@ -1056,7 +1056,7 @@ lgbm_params =  {
     # 'metric': 'rmse',
     # 'metric': 'binary_logloss',
     'metric': metric,
-    'num_class':len(np.unique(y)),
+    'num_class':len(np.unique(y))+1,
     # 'max_depth': 15,
     'num_leaves':100,
     'feature_fraction': 0.5,
@@ -1088,7 +1088,7 @@ for train, valid in kf_.split(X):
     model = lgb.train(
         lgbm_params,
         lgbtrain,
-        num_boost_round=20000,
+        num_boost_round=2000,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
         learning_rates=lambda iter:0.1 * (0.999 ** iter),
