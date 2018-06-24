@@ -230,25 +230,6 @@ elif target == 'param_3':
     df.drop(['param_3'],axis=1,inplace=True)
     categorical.remove('param_3')
 
-if args.compare == 'True':
-    if "pos_title.csv" not in os.listdir("."):
-        good_performing_ads = df_train[df_train['deal_probability'] >= 0.90]
-        bad_performing_ads = df_train[df_train['deal_probability'] <= 0.05]
-        pos_text_cln = list(" ".join(good_performing_ads.title).split(" "))
-        neg_text_cln = list(" ".join(bad_performing_ads.title).split(" "))
-        tqdm.pandas()
-        df['pos_title'] = df['title'].progress_apply(lambda x: sum(np.isin(x.split(" "),pos_text_cln)))
-        df['neg_title'] = df['title'].progress_apply(lambda x: sum(np.isin(x.split(" "),neg_text_cln)))
-        df['pos_title'].to_csv("pos_title.csv", index=True, header='pos_title')
-        df['neg_title'].to_csv("neg_title.csv", index=True, header='neg_title')
-    else:
-        pos_title = pd.read_csv("pos_title.csv", index_col='item_id').astype(int)
-        # neg_title = pd.read_csv("neg_title.csv", index_col='item_id')
-        df = pd.concat([df,pos_title], axis=1)
-        # df = pd.concat([df,neg_title], axis=1)
-        del pos_title
-        gc.collect()
-
 if args.deal == 'True':
     ##############################################################################################################
     print("Features Involved with Deal Probability")
