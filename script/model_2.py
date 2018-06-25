@@ -1049,11 +1049,11 @@ if args.sparse == "True":
     testing = hstack([csr_matrix(temp_test.values),ready_df[train_index.shape[0]:]])
     del ready_df
     gc.collect();
-    feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
-    index_list = list(feat.index)
-    tfvocab = list(feat.feature.values)
-    X = X.tocsr()[:,index_list]
-    testing = testing.tocsr()[:,index_list]
+    # feat = pd.read_csv('feature.csv', index_col='Unnamed: 0')
+    # index_list = list(feat.index)
+    # tfvocab = list(feat.feature.values)
+    # X = X.tocsr()[:,index_list]
+    # testing = testing.tocsr()[:,index_list]
 else:
     gc.collect();
     tfvocab = df.columns.tolist()
@@ -1081,13 +1081,13 @@ print("Light Gradient Boosting Regressor")
 lgbm_params =  {
     'task': 'train',
     'boosting_type': 'gbdt',
-    # 'objective': 'regression',
+    'objective': 'regression',
     # 'objective':'binary'
     # 'objective': 'poisson',
-    'objective': objective,
-    # 'metric': 'rmse',
+    # 'objective': objective,
+    'metric': 'rmse',
     # 'metric': 'binary_logloss',
-    'metric': metric,
+    # 'metric': metric,
     # 'max_depth': 15,
     'num_leaves':500,
     'feature_fraction': 0.5,
