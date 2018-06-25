@@ -173,7 +173,7 @@ if args.image == 'True':
     image_blur_train = pd.read_csv("../input/image-confidence/train_blurrness.csv", index_col="item_id")
     image_blur_test = pd.read_csv("../input/image-confidence/test_blurrness.csv", index_col="item_id")
     image_blur = pd.concat([image_confidence_train,image_confidence_test],axis=0)
-    df = df.merge(image_confidence, on='item_id', how='left')
+    df = df.merge(image_blur, on='item_id', how='left')
 
     del image_confidence_train, image_confidence_test, image_blur_train, image_blur_test, image_blur
     gc.collect()
@@ -411,6 +411,18 @@ if args.deal == 'True':
     df['std_deal_by_item_seq_number_bin'].fillna(-1, inplace=True)
 
     categorical = categorical + ['item_bin','price_range','days_up_bin','times_up_bin']
+
+param_1 = pd.read_csv("../input/aggregated/param_1.csv", index_col="item_id")
+df.drop(['param_1'], axis=1, inplace=True)
+df = df.merge(param_1, on='item_id', how='left')
+
+# param_2 = pd.read_csv("../input/aggregated/param_2.csv", index_col="item_id")
+# df.drop(['param_2'], axis=1, inplace=True)
+# df = df.merge(param_2, on='item_id', how='left')
+
+# param_3 = pd.read_csv("../input/aggregated/param_3.csv", index_col="item_id")
+# df.drop(['param_3'], axis=1, inplace=True)
+# df = df.merge(param_3, on='item_id', how='left')
 
 if args.categorical == "True":    
     ##############################################################################################################
