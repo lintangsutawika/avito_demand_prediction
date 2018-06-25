@@ -172,7 +172,7 @@ if args.image == 'True':
 
     image_blur_train = pd.read_csv("../input/image-confidence/train_blurrness.csv", index_col="item_id")
     image_blur_test = pd.read_csv("../input/image-confidence/test_blurrness.csv", index_col="item_id")
-    image_blur = pd.concat([image_confidence_train,image_confidence_test],axis=0)
+    image_blur = pd.concat([image_blur_train,image_blur_test],axis=0)
     df = df.merge(image_blur, on='item_id', how='left')
 
     del image_confidence_train, image_confidence_test, image_blur_train, image_blur_test, image_blur
