@@ -1091,7 +1091,7 @@ lgbm_params =  {
     # 'metric': 'rmse',
     # 'metric': 'binary_logloss',
     # 'metric': metric,
-    'metric': 'xentropy'
+    'metric': 'xentropy',
     # 'max_depth': 15,
     'num_leaves':500,
     'feature_fraction': 0.5,
