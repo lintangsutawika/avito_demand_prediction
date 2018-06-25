@@ -503,12 +503,12 @@ lgbm_params =  {
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
-    'bagging_freq': 5,
+    'bagging_freq': 1,
     'learning_rate': 0.001,
     'verbose': 0,
     'tree_learner':'voting',
-    'lambda_l1': 10,
-    'lambda_l2': 10,
+    # 'lambda_l1': 10,
+    # 'lambda_l2': 10,
     'max_bin': 100
 }  
 
@@ -531,22 +531,24 @@ for train, valid in kf_.split(X):
     model = lgb.train(
         lgbm_params,
         lgbtrain,
-        num_boost_round=1,
+        num_boost_round=200,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
-        learning_rates=lambda iter:0.1 * (0.999 ** iter),
-        early_stopping_rounds=1,
-        verbose_eval=1
+        # learning_rates=lambda iter:0.1 * (0.999 ** iter),
+        early_stopping_rounds=20,
+        verbose_eval=10
     )
 
     model.save_model('model_{}.txt'.format(i));i += 1
     prediction = model.predict(X[valid])
-    validation_score = np.sqrt(metrics.mean_squared_error(y[valid], model.predict(X[valid])))
-    print('Fold {}, RMSE: {}'.format(i,validation_score))
+    validation_score = sum(y[valid] == np.argmax(model.predict(X[valid]),axis=1))/len(y[valid]) * 100.0
+    print('Fold {}, Accuracy: {}%'.format(i,validation_score))
     cv_score += validation_score
     models.append(model)
     feature = pd.DataFrame(data={'feature':model.feature_name(),'importance':model.feature_importance()})
         # print(feature.sort_values('importance'))
+    if i == 0:
+        break
 
 ##############################################################################################################
 print("Model Prediction Stage")
@@ -560,9 +562,8 @@ model_prediction = model_prediction/len(models)
 #Mixing lightgbm with ridge. I haven't really tested if this improves the score or not
 #blend = 0.75*model_prediction + 0.25*ridge_oof_test[:,0]
 
-model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
-model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
-model_submission.round(5)
-model_submission.to_csv("submission.csv",index=True,header=True)
+model_submission = pd.DataFrame(model_prediction,columns=["param_2"],index=test_index)
+param_2 = pd.concat([pd.DataFrame(y, columns["param_2"],index=train_index),model_submission])
+param_2.to_csv("param_2.csv",index=True,header=True)
 # print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
