@@ -26,6 +26,7 @@ from gensim.models import Word2Vec # categorical feature to vectors
 
 # Models Packages
 from pathlib import PurePath
+from scipy import sparse
 from sklearn import metrics
 from sklearn.metrics import mean_squared_error
 from sklearn import feature_selection
@@ -1033,6 +1034,7 @@ if args.vgg == "True":
     print("VGG Features")
     ##############################################################################################################
     # Create a function to load image features
+    debug = False
     def load_imfeatures(folder):
         path = PurePath(folder)
         features = sparse.load_npz(str(path / 'features.npz'))
@@ -1050,7 +1052,7 @@ if args.vgg == "True":
     fboth = sparse.vstack([ftrain, ftest])
     del ftrain, ftest
     gc.collect()
-    assert fboth.shape[0]==data.shape[0]
+    assert fboth.shape[0]==df.shape[0]
 
     # Categorical image feature (max and min VGG16 feature)
     df['im_max_feature'] = fboth.argmax(axis=1)  # This will be categorical
