@@ -73,6 +73,7 @@ parser.add_argument('--tfidf', default=False)
 parser.add_argument('--test', default=False)
 parser.add_argument('--binary', default=False)
 parser.add_argument('--xentropy', default=False)
+parser.add_argument('--vgg', default=False)
 args = parser.parse_args()
 
 def rmse(y, y0):
@@ -99,6 +100,7 @@ print("tfidf: {}".format(args.tfidf))
 print("test: {}".format(args.test))
 print("binary: {}".format(args.binary))
 print("xentropy: {}".format(args.xentropy))
+print("vgg: {}".format(args.vgg))
 
 ##############################################################################################################
 print("Data Load Stage")
@@ -1022,6 +1024,50 @@ if args.tfidf == "True":
     del vectorizer
     gc.collect();
 
+
+if args.vgg == "True":
+    ##############################################################################################################
+    print("VGG Features")
+    ##############################################################################################################
+    # Create a function to load image features
+    def load_imfeatures(folder):
+        path = PurePath(folder)
+        features = sparse.load_npz(str(path / 'features.npz'))
+        
+        if debug:
+            features = features[:100000]
+            
+        return features
+        
+      
+    ftrain = load_imfeatures('../input/image-features/vgg-train/')
+    ftest = load_imfeatures('../input/image-features/vgg-test/')
+
+    # Merge two datasets
+    fboth = sparse.vstack([ftrain, ftest])
+    del ftrain, ftest
+    gc.collect()
+    assert fboth.shape[0]==data.shape[0]
+
+    # Categorical image feature (max and min VGG16 feature)
+    df['im_max_feature'] = fboth.argmax(axis=1)  # This will be categorical
+    df['im_min_feature'] = fboth.argmin(axis=1)  # This will be categorical
+
+    df['im_n_features'] = fboth.getnnz(axis=1)
+    df['im_mean_features'] = fboth.mean(axis=1)
+    df['im_meansquare_features'] = fboth.power(2).mean(axis=1)
+
+    # Reduce image features
+    tsvd = TruncatedSVD(32)
+    ftsvd = tsvd.fit_transform(fboth)
+    del fboth
+    gc.collect()
+
+    # Merge image features into data
+    df_ftsvd = pd.DataFrame(ftsvd, index=df.index).add_prefix('im_tsvd_')
+    df = pd.concat([df, df_ftsvd], axis=1)
+    del df_ftsvd, ftsvd
+    gc.collect()
 
 ##############################################################################################################
 # print("Use Binary")
