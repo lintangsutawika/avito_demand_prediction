@@ -25,6 +25,7 @@ from random import shuffle
 from gensim.models import Word2Vec # categorical feature to vectors
 
 # Models Packages
+from pathlib import PurePath
 from sklearn import metrics
 from sklearn.metrics import mean_squared_error
 from sklearn import feature_selection
@@ -177,6 +178,8 @@ if args.image == 'True':
     image_blur = pd.concat([image_blur_train,image_blur_test],axis=0)
     df = df.merge(image_blur, on='item_id', how='left')
 
+    # kp_score = pd.read_csv("../input/image-confidence/Image_KP_SCORES.csv")
+    # df = df.merge(kp_score, on='image', how='left')
     del image_confidence_train, image_confidence_test, image_blur_train, image_blur_test, image_blur
     gc.collect()
 
