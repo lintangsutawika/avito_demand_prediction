@@ -122,7 +122,7 @@ gc.collect()
 
 df.drop(["image"],axis=1,inplace=True)
 
-target = 'param_1'
+target = 'param_2'
 
 if target == 'param_1':
     df.set_index('item_id', inplace=True)
@@ -562,8 +562,8 @@ model_prediction = model_prediction/len(models)
 #Mixing lightgbm with ridge. I haven't really tested if this improves the score or not
 #blend = 0.75*model_prediction + 0.25*ridge_oof_test[:,0]
 
-model_submission = pd.DataFrame(model_prediction,columns=["param_2"],index=test_index)
-param_2 = pd.concat([pd.DataFrame(y, columns["param_2"],index=train_index),model_submission])
+model_submission = pd.DataFrame(np.argmax(model_prediction),columns=["param_2"],index=test_index)
+param_2 = pd.concat([pd.DataFrame(y, columns=["param_2"],index=train_index),model_submission])
 param_2.to_csv("param_2.csv",index=True,header=True)
 # print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
