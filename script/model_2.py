@@ -1088,10 +1088,10 @@ lgbm_params =  {
     # 'objective': 'poisson',
     # 'objective': objective,
     'objective': 'xentropy',
-    # 'metric': 'rmse',
+    'metric': 'rmse',
     # 'metric': 'binary_logloss',
     # 'metric': metric,
-    'metric': 'xentropy',
+    # 'metric': 'xentropy',
     # 'max_depth': 15,
     'num_leaves':500,
     'feature_fraction': 0.5,
@@ -1126,7 +1126,7 @@ for train, valid in kf_.split(X):
         num_boost_round=20000,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
-        learning_rates=lambda iter:0.001 * (0.999 ** iter),
+        learning_rates=lambda iter:0.05 * (0.999 ** iter),
         early_stopping_rounds=50,
         verbose_eval=100
     )
