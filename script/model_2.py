@@ -418,9 +418,9 @@ param_1 = pd.read_csv("../input/aggregated/param_1.csv", index_col="item_id")
 df.drop(['param_1'], axis=1, inplace=True)
 df = df.merge(param_1, on='item_id', how='left')
 
-# param_2 = pd.read_csv("../input/aggregated/param_2.csv", index_col="item_id")
-# df.drop(['param_2'], axis=1, inplace=True)
-# df = df.merge(param_2, on='item_id', how='left')
+param_2 = pd.read_csv("../input/aggregated/param_2.csv", index_col="item_id")
+df.drop(['param_2'], axis=1, inplace=True)
+df = df.merge(param_2, on='item_id', how='left')
 
 # param_3 = pd.read_csv("../input/aggregated/param_3.csv", index_col="item_id")
 # df.drop(['param_3'], axis=1, inplace=True)
