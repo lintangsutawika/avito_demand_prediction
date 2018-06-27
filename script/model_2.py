@@ -179,9 +179,11 @@ if args.image == 'True':
     image_blur = pd.concat([image_blur_train,image_blur_test],axis=0)
     df = df.merge(image_blur, on='item_id', how='left')
 
-    kp_score_train = pd.read_csv("../input/image-confidence/Image_KP_SCORES_test.csv")
-    kp_score_test = pd.read_csv("../input/image-confidence/Image_KP_SCORES_train.csv")
-    kp_score = pd.concat([kp_score_train, kp_score_test],axis=0)
+    # kp_score_train = pd.read_csv("../input/image-confidence/Image_KP_SCORES_train.csv")
+    # kp_score_test = pd.read_csv("../input/image-confidence/Image_KP_SCORES_test.csv")
+    # kp_score = pd.concat([kp_score_train, kp_score_test],axis=0)
+    # kp_score.drop_duplicates(keep='last', inplace=True)
+    kp_score = pd.read_csv("../input/image-confidence/Image_KP_SCORES.csv")
     df = df.merge(kp_score, on='image', how='left')
     df['Image_kp_score'].fillna(-1, inplace=True)
     del image_confidence_train, image_confidence_test, image_blur_train, image_blur_test, image_blur
@@ -1066,7 +1068,7 @@ if args.vgg == "True":
     df['im_meansquare_features'] = fboth.power(2).mean(axis=1)
 
     # Reduce image features
-    tsvd = TruncatedSVD(32)
+    tsvd = TruncatedSVD(100)
     ftsvd = tsvd.fit_transform(fboth)
     del fboth
     gc.collect()
