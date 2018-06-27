@@ -1149,12 +1149,12 @@ lgbm_params =  {
     # 'metric': metric,
     # 'metric': 'xentropy',
     # 'max_depth': 15,
-    'num_leaves':500,
+    'num_leaves':700,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
     'bagging_freq': 100,
-    'learning_rate': 0.005,
+    'learning_rate': 0.01,
     'verbose': 0,
     'lambda_l1': 10,
     'lambda_l2': 10
@@ -1182,7 +1182,7 @@ for train, valid in kf_.split(X):
         num_boost_round=20000,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
-        learning_rates=lambda iter:0.1 * (0.999 ** iter),
+        # learning_rates=lambda iter:0.1 * (0.998 ** iter),
         early_stopping_rounds=50,
         verbose_eval=100
     )
