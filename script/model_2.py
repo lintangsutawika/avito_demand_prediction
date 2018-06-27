@@ -179,8 +179,11 @@ if args.image == 'True':
     image_blur = pd.concat([image_blur_train,image_blur_test],axis=0)
     df = df.merge(image_blur, on='item_id', how='left')
 
-    # kp_score = pd.read_csv("../input/image-confidence/Image_KP_SCORES.csv")
-    # df = df.merge(kp_score, on='image', how='left')
+    kp_score_train = pd.read_csv("../input/image-confidence/Image_KP_SCORES_test.csv")
+    kp_score_test = pd.read_csv("../input/image-confidence/Image_KP_SCORES_train.csv")
+    kp_score = pd.concat([kp_score_train, kp_score_test],axis=0)
+    df = df.merge(kp_score, on='image', how='left')
+    df['Image_kp_score'].fillna(-1, inplace=True)
     del image_confidence_train, image_confidence_test, image_blur_train, image_blur_test, image_blur
     gc.collect()
 
@@ -1177,7 +1180,7 @@ for train, valid in kf_.split(X):
         num_boost_round=20000,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
-        learning_rates=lambda iter:0.05 * (0.999 ** iter),
+        learning_rates=lambda iter:0.01 * (0.999 ** iter),
         early_stopping_rounds=50,
         verbose_eval=100
     )
