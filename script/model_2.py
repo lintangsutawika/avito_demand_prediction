@@ -1068,7 +1068,7 @@ if args.vgg == "True":
     df['im_meansquare_features'] = fboth.power(2).mean(axis=1)
 
     # Reduce image features
-    tsvd = TruncatedSVD(100)
+    tsvd = TruncatedSVD(50)
     ftsvd = tsvd.fit_transform(fboth)
     del fboth
     gc.collect()
@@ -1149,11 +1149,11 @@ lgbm_params =  {
     # 'metric': metric,
     # 'metric': 'xentropy',
     # 'max_depth': 15,
-    'num_leaves':700,
+    'num_leaves':1024,
     'feature_fraction': 0.5,
     'bagging_fraction': 0.75,
     # 'min_data_in_leaf': 500,
-    'bagging_freq': 100,
+    'bagging_freq': 150,
     'learning_rate': 0.01,
     'verbose': 0,
     'lambda_l1': 10,
@@ -1162,7 +1162,7 @@ lgbm_params =  {
 
 
 i = 0
-nFolds = 10
+nFolds = 5
 cv_score = 0
 models = []
 temp_prediction = []
@@ -1180,10 +1180,10 @@ for train, valid in kf_.split(X):
     model = lgb.train(
         lgbm_params,
         lgbtrain,
-        num_boost_round=20000,
+        num_boost_round=5000,
         valid_sets=[lgbtrain, lgbvalid],
         valid_names=['train','valid'],
-        # learning_rates=lambda iter:0.1 * (0.998 ** iter),
+        # learning_rates=lambda iter:0.15 * (0.998 ** iter),
         early_stopping_rounds=50,
         verbose_eval=100
     )
