@@ -168,21 +168,20 @@ if args.image == 'True':
     ##############################################################################################################
     print("Image Confidence")
     ##############################################################################################################
+    # Adapated from https://www.kaggle.com/wesamelshamy/high-correlation-feature-image-classification-conf
     image_confidence_train = pd.read_csv("../input/image-confidence/image_confidence_train.csv")
     image_confidence_test = pd.read_csv("../input/image-confidence/image_confidence_test.csv")
     image_confidence = pd.concat([image_confidence_train,image_confidence_test],axis=0)
     df = df.merge(image_confidence, on='image', how='left')
     df['image_confidence'].fillna(-1, inplace=True)
 
+    # Adapted from https://www.kaggle.com/sukhyun9673/export-image-features/output
     image_blur_train = pd.read_csv("../input/image-confidence/train_blurrness.csv", index_col="item_id")
     image_blur_test = pd.read_csv("../input/image-confidence/test_blurrness.csv", index_col="item_id")
     image_blur = pd.concat([image_blur_train,image_blur_test],axis=0)
     df = df.merge(image_blur, on='item_id', how='left')
 
-    # kp_score_train = pd.read_csv("../input/image-confidence/Image_KP_SCORES_train.csv")
-    # kp_score_test = pd.read_csv("../input/image-confidence/Image_KP_SCORES_test.csv")
-    # kp_score = pd.concat([kp_score_train, kp_score_test],axis=0)
-    # kp_score.drop_duplicates(keep='last', inplace=True)
+    # Adapted from https://www.kaggle.com/sukhyun9673/extracting-image-features-test/output
     kp_score = pd.read_csv("../input/image-confidence/Image_KP_SCORES.csv")
     df = df.merge(kp_score, on='image', how='left')
     df['Image_kp_score'].fillna(-1, inplace=True)
@@ -192,8 +191,8 @@ if args.image == 'True':
 df.drop(["image"],axis=1,inplace=True)
 
 # Aggregated Features
-# https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
 if args.agg_feat == 'True':
+    # Adapted from https://www.kaggle.com/bminixhofer/aggregated-features-lightgbm
     ##############################################################################################################
     print("Aggregated Feature")
     ##############################################################################################################
@@ -212,6 +211,7 @@ test_index = testing.index
 
 # Predicted Image Top 1
 if args.image_top == 'True':
+    # Adapated from https://www.kaggle.com/christofhenkel/text2image-top-1
     ##############################################################################################################
     print("Predicted Image Top 1 Feature")
     ##############################################################################################################
@@ -453,11 +453,11 @@ else:
     categorical = ""
     
 if args.target == "True":
+    # Adapted from https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
     ##############################################################################################################
     print("Target Encoding for Categorical Features")
     ##############################################################################################################
     class TargetEncoder:
-        # Adapted from https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features
         def __repr__(self):
             return 'TargetEncoder'
 
@@ -529,6 +529,7 @@ if args.target == "True":
     df = pd.concat([df,pd.concat([training[te_cats],testing[te_cats]],axis=0)], axis=1)
 
 if args.cat2vec == 'True':
+    # Adapted from https://www.kaggle.com/c/avito-demand-prediction/discussion/57119
     ##############################################################################################################
     print("Cat2Vec Encoding for Categorical Features")
     ##############################################################################################################
@@ -1013,7 +1014,6 @@ if args.tfidf == "True":
         }
 
     def get_col(col_name): return lambda x: x[col_name]
-    ##I added to the max_features of the description. It did not change my score much but it may be worth investigating
     vectorizer = FeatureUnion([
             ('description',TfidfVectorizer(
                 ngram_range=(1, 2),
@@ -1035,6 +1035,7 @@ if args.tfidf == "True":
 
 
 if args.vgg == "True":
+    # Adapted from https://www.kaggle.com/bguberfain/vgg16-train-features/code and https://www.kaggle.com/bguberfain/vgg16-test-features/code
     ##############################################################################################################
     print("VGG Features")
     ##############################################################################################################
@@ -1049,7 +1050,6 @@ if args.vgg == "True":
             
         return features
         
-      
     ftrain = load_imfeatures('../input/image-features/vgg-train/')
     ftest = load_imfeatures('../input/image-features/vgg-test/')
 
@@ -1208,12 +1208,9 @@ for i,model in enumerate(models):
     print("Model {}".format(i))
     model_prediction = model_prediction + np.asarray(model.predict(testing))
 model_prediction = model_prediction/len(models)
-#Mixing lightgbm with ridge. I haven't really tested if this improves the score or not
-#blend = 0.75*model_prediction + 0.25*ridge_oof_test[:,0]
 
 model_submission = pd.DataFrame(model_prediction,columns=["deal_probability"],index=test_index)
 model_submission['deal_probability'].clip(0.0, 1.0, inplace=True) # Between 0 and 1
 model_submission.round(5)
 model_submission.to_csv("submission.csv",index=True,header=True)
-# print("image_top: {},agg_feat: {}, mean_encoding: {},emoji: {},stem: {}".format(args.image_top,args.agg_feat,args.mean_encoding,args.emoji,args.stem))
 print("Notebook Runtime: %0.2f Minutes"%((time.time() - notebookstart)/60))
