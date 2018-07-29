@@ -6,7 +6,7 @@ Bronze submission (Blended with other high score low correlation submission)
 # Downloading Datasets
 
 It's advise that you have access to the competition materials (by accepting terms and aggreements in the competition page) and installed Kaggle's API. 
-To download, simply run `getDatasets.sh`. 
+To download, simply run `getDatasets.sh`. You might need to use `sudo chmod 777 getDatasets.sh` first.
 ```
 ./getDatasets.sh
 ```
